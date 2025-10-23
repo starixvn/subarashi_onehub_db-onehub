@@ -1,0 +1,360 @@
+
+/*<info serverAlias="DBAFF12B-Affiliate_12B"></info>*/
+/*
+    Created: 20250822@Sophia
+    DB: DBAFF12B-Affiliate_12B
+    Task: New Landing Page Setting [RedmineId : #236797]
+        - Create new Landing Page tables (Module, MediaGallery, Setting, Deal)
+        - Updated columns and datatypes per latest documentation/screenshots
+*/
+
+use ONEHub
+GO
+-- 1. Drop & Create Module
+IF OBJECT_ID('dbo.Module', 'U') IS NOT NULL DROP TABLE dbo.Module;
+CREATE TABLE Module (
+    ModuleId INT NOT NULL,
+    ModuleName NVARCHAR(200) NOT NULL,
+    ModuleType SMALLINT NOT NULL,
+    Remark VARCHAR(200) NULL,
+    NavigateTo INT NULL,
+    IsMultipleUpload BIT NOT NULL,
+    IsRequired BIT NOT NULL,
+    IsUnique BIT NOT NULL,
+    StatusId TINYINT NULL,
+    CONSTRAINT PK_Module PRIMARY KEY CLUSTERED (ModuleId)
+) 
+ON [SETTING_DATA];
+
+-- 2. Drop & Create MediaGallery
+IF OBJECT_ID('dbo.MediaGallery', 'U') IS NOT NULL DROP TABLE dbo.MediaGallery;
+CREATE TABLE MediaGallery (
+    MediaId INT IDENTITY(1,1) NOT NULL,
+    MediaName VARCHAR(200) NOT NULL,
+    FileName VARCHAR(200) NOT NULL,
+    ModuleId INT NOT NULL,
+    Dimension VARCHAR(20) NULL,
+    StatusId TINYINT NULL,
+    TargetCountryCode VARCHAR(50) NULL,
+    MarketId VARCHAR(50) NULL,
+    Creator INT NOT NULL,
+    CreatedDate DATETIME NOT NULL,
+    UpdatedBy INT NULL,
+    UpdatedDate DATETIME NULL,
+    RowVer rowversion NOT NULL,
+    MediaCode VARCHAR(10) NULL,
+    CONSTRAINT PK_MediaGallery PRIMARY KEY CLUSTERED (MediaId)
+) 
+ON [SETTING_DATA];
+
+CREATE NONCLUSTERED INDEX IX_MediaGallery_MediaName 
+ON MediaGallery (MediaName)
+ON [SETTING_DATA];
+
+CREATE NONCLUSTERED INDEX IX_MediaGallery_ModuleId 
+ON MediaGallery (ModuleId)
+ON [SETTING_DATA];
+
+-- 2a. Create MediaCode
+IF OBJECT_ID('dbo.MediaCode', 'U') IS NOT NULL DROP TABLE dbo.MediaCode;
+CREATE TABLE MediaCode (
+    MediaCodeId INT IDENTITY(1,1) NOT NULL,
+    MediaCode VARCHAR(10) NOT NULL,
+    MediaId INT NULL,
+    CONSTRAINT PK_MediaCode PRIMARY KEY CLUSTERED (MediaCodeId)
+) 
+ON [SETTING_DATA];
+
+---- 3. Drop & Create Deal
+--IF OBJECT_ID('dbo.Deal', 'U') IS NOT NULL DROP TABLE dbo.Deal;
+--CREATE TABLE Deal (
+--    Id SMALLINT IDENTITY(1,1) NOT NULL,
+--    DealId INT NOT NULL,
+--    Creator INT NOT NULL,
+--    CreatedDate DATETIME NOT NULL,
+--    UpdatedBy INT NULL,
+--    UpdatedDate DATETIME NULL,
+--    StatusId TINYINT NOT NULL, -- 1: active, 0: inactive
+--    CONSTRAINT PK_Deal PRIMARY KEY NONCLUSTERED (Id)
+--) 
+--ON [SETTING_DATA];
+
+--CREATE CLUSTERED INDEX CIX_Deal_DealId 
+--ON Deal (DealId)
+--ON [SETTING_DATA];
+
+-- 4. Drop & Create Builder
+IF OBJECT_ID('dbo.PageBuilder', 'U') IS NOT NULL DROP TABLE dbo.PageBuilder;
+CREATE TABLE PageBuilder (
+    PageId INT IDENTITY(1,1) NOT NULL,
+    PageName VARCHAR(200) NOT NULL,
+    PageCode VARCHAR(100) NOT NULL,
+    CampaignId INT NULL,
+    TargetCountryCode VARCHAR(50) NOT NULL,
+    MarketId VARCHAR(50) NOT NULL,
+    --DealIds VARCHAR(2000) NULL,
+    StatusId TINYINT NULL,
+    Creator INT NOT NULL,
+    CreatedDate DATETIME NOT NULL,
+    UpdatedBy INT NULL,
+    UpdatedDate DATETIME NULL,
+    RowVer ROWVERSION NOT NULL,
+    CONSTRAINT PK_Builder PRIMARY KEY CLUSTERED (PageId)
+) 
+ON [SETTING_DATA];
+
+-- Create nonclustered index on PageCode
+CREATE NONCLUSTERED INDEX IX_PageBuilder_PageCode
+ON PageBuilder (PageCode)
+ON [SETTING_DATA];
+GO
+
+-- 5. Drop & Create Builder_Preview
+IF OBJECT_ID('dbo.Builder_Preview', 'U') IS NOT NULL DROP TABLE dbo.PageBuilder_Preview;
+CREATE TABLE PageBuilder_Preview (
+    PageId INT IDENTITY(1,1) NOT NULL,
+    PageName VARCHAR(200) NOT NULL,
+    PageCode VARCHAR(100) NOT NULL,
+    CampaignId INT NULL,
+    TargetCountryCode VARCHAR(50) NOT NULL,
+    MarketId VARCHAR(50) NOT NULL,
+    DealIds VARCHAR(2000) NULL,
+    StatusId TINYINT NULL,
+    Creator INT NOT NULL,
+    CreatedDate DATETIME NOT NULL,
+    UpdatedBy INT NULL,
+    UpdatedDate DATETIME NULL,
+    RowVer ROWVERSION NOT NULL,
+    CONSTRAINT PK_PageBuilder_Preview PRIMARY KEY CLUSTERED (PageId)
+) 
+ON [SETTING_DATA];
+GO
+
+-- 6. Drop & Create BuilderDetail
+IF OBJECT_ID('dbo.PageBuilderDetail', 'U') IS NOT NULL DROP TABLE dbo.PageBuilderDetail;
+CREATE TABLE PageBuilderDetail (
+    PageDetailId INT NOT NULL IDENTITY(1,1),
+    PageId INT NOT NULL,
+    OrderId INT NULL,
+    ModuleId INT NULL,
+    MediaId INT NULL,
+    ExtraInfo VARCHAR(8000) NULL,
+    CONSTRAINT PK_PageBuilderDetail PRIMARY KEY NONCLUSTERED (PageDetailId)
+) 
+ON [SETTING_DATA];
+
+CREATE CLUSTERED INDEX CIX_BuilderDetail_PageId
+ON PageBuilderDetail (PageId)
+ON [SETTING_DATA];
+GO
+
+-- 7. Drop & Create BuilderDetail_Preview
+IF OBJECT_ID('dbo.BuilderDetail_Preview', 'U') IS NOT NULL DROP TABLE dbo.PageBuilderDetail_Preview;
+CREATE TABLE PageBuilderDetail_Preview (
+    PageDetailId INT NOT NULL IDENTITY(1,1),
+    PageId INT NOT NULL,
+    OrderId INT NULL,
+    ModuleId INT NULL,
+    MediaId INT NULL,
+    ExtraInfo VARCHAR(8000) NULL,
+    CONSTRAINT PK_PageBuilderDetail_Preview PRIMARY KEY NONCLUSTERED (PageDetailId)
+) 
+ON [SETTING_DATA];
+
+CREATE CLUSTERED INDEX CIX_BuilderDetail_Preview_PageId
+ON PageBuilderDetail_Preview (PageId)
+ON [SETTING_DATA];
+GO
+
+-- 8. Drop & Create Campaign
+IF OBJECT_ID('dbo.Campaign', 'U') IS NOT NULL DROP TABLE dbo.Campaign;
+CREATE TABLE Campaign (
+    CampaignId INT NOT NULL IDENTITY(1000,1),
+    CampaignName VARCHAR(500) NULL,
+    CampaignCode VARCHAR(100) NULL, -- CAM_YYYYMMDD_CampaignId
+    Description VARCHAR(500) NULL,
+    Creator INT NULL,
+    CreatedDate DATETIME NULL,
+    UpdatedBy INT NULL,
+    UpdatedDate DATETIME NULL,
+    StatusId TINYINT NULL, -- 0: Draft, 1: Active, 2: Deactive, 3: Archived
+    CONSTRAINT PK_Campaign PRIMARY KEY CLUSTERED (CampaignId)
+) 
+ON [SETTING_DATA];
+GO
+
+
+-- 9. Drop & Create ComponentType
+IF OBJECT_ID('dbo.ComponentType', 'U') IS NOT NULL DROP TABLE dbo.ComponentType;
+CREATE TABLE ComponentType (
+    ComponentTypeId INT NOT NULL IDENTITY(1,1),
+    ComponentTypeName VARCHAR(100) NULL,
+    CONSTRAINT PK_ComponentType PRIMARY KEY CLUSTERED (ComponentTypeId)
+) 
+ON [SETTING_DATA];
+GO
+
+--10. Drop & Create Component
+IF OBJECT_ID('dbo.Component', 'U') IS NOT NULL DROP TABLE dbo.Component;
+CREATE TABLE Component (
+    ComponentId INT NOT NULL IDENTITY(1,1),
+    ComponentName VARCHAR(200) NULL,
+    ComponentType INT NULL, -- FK to ComponentType.ComponentTypeId
+    Creator INT NULL,
+    CreatedDate DATETIME NULL,
+    UpdatedBy INT NULL,
+    UpdatedDate DATETIME NULL,
+    StatusId TINYINT NULL, -- 0: Active, 1: Inactive
+    CONSTRAINT PK_Component PRIMARY KEY CLUSTERED (ComponentId)
+) 
+ON [SETTING_DATA];
+GO
+
+
+CREATE TABLE [dbo].[LogType](
+	[TypeId] [smallint] NOT NULL,
+	[TypeName] [nvarchar](50) NULL,
+	[Description] [nvarchar](50) NULL,
+ CONSTRAINT [PK_LogType] PRIMARY KEY CLUSTERED 
+(
+	[TypeId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
+) ON [LogData]
+GO
+
+
+CREATE TABLE [dbo].[LogAction](
+	[ActionId] [int] NOT NULL,
+	[ActionTypeId] [int] NULL,
+	[SPName] [varchar](200) NULL,
+	[IsInternal] [bit] NULL,
+	[Items] [varchar](max) NULL,
+	[Description] [nvarchar](4000) NULL,
+	[ActionName] [varchar](256) NULL,
+ CONSTRAINT [PK_LogAction] PRIMARY KEY NONCLUSTERED 
+(
+	[ActionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
+) ON [LogData] TEXTIMAGE_ON [LogData]
+GO
+
+
+CREATE TABLE [dbo].[UserLog_RunSP_Detail](
+	[LogId] [int] IDENTITY(1,1) NOT NULL,
+	[LogActionId] [int] NULL,
+	[SPName] [varchar](200) NULL,
+	[UserId] [int] NULL,
+	[AffId] [int] NULL,
+	[LogDate] [datetime] NOT NULL,
+	[OldData] [nvarchar](max) NULL,
+	[NewData] [nvarchar](max) NULL,
+	[IP] [varchar](50) NULL,
+	[Duration] [smallint] NULL,
+	[LogTypeId] [int] NULL,
+	[Language] [varchar](50) NULL,
+	[IsWebCall] [bit] NULL,
+ CONSTRAINT [PK_UserLog_RunSP_Detail] PRIMARY KEY NONCLUSTERED 
+(
+	[LogId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
+) ON [LogData] TEXTIMAGE_ON [LogData]
+GO
+
+ALTER TABLE [dbo].[UserLog_RunSP_Detail] ADD  CONSTRAINT [DF_UserLog_RunSP_Detail_LogDate]  DEFAULT (getdate()) FOR [LogDate]
+
+GO
+CREATE TABLE Language (
+  LangId	varchar(5) NOT NULL,
+  Language	varchar(45) NOT NULL,
+ CONSTRAINT [PK_Language] PRIMARY KEY CLUSTERED 
+(
+	[LangId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
+) ON [SETTING_DATA]
+
+INSERT INTO language VALUES ('bd','Bangla'),('bd_en','English'),('br','Brazilian'),('ch','Traditional Chinese'),('cs','Simple Chinese'),('de','Deutsch'),('el','Greek'),('en','English'),('es','Spanish'),('hi','Hindu'),('hi_en','English'),('hu','Hungarian'),('id','Indonesian'),('id_en','English'),('it','Italian'),('jp','Japanese'),('kh','Khmer'),('kh_en','English'),('ko','Korean'),('mx','Mexican'),('my','Bahasa Malaysia'),('pl','Polish'),('ro','Romanian'),('ru','Russian'),('th','Thai'),('th_en','English'),('vn','Vietnamese'),('zhcn','New Chinese Simplified');
+
+
+GO
+CREATE TABLE [dbo].[TargetCountry](
+	[MarketID] [varchar](50) NOT NULL,
+	[MarketName] [varchar](100) NULL,
+	[CountryCode] [varchar](5) NOT NULL,
+	[CountryName] [varchar](100) NULL,
+	[OrderNo] [int] NULL,
+	[ShortedCode] [varchar](20) NULL,
+ CONSTRAINT [PK_CountryCode_MarketID] PRIMARY KEY CLUSTERED 
+(
+	[CountryCode] ASC,
+	[MarketID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [SETTING_DATA]
+GO
+
+INSERT INTO TargetCountry (MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode)
+SELECT MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode
+FROM Affiliate_12B.dbo.TargetCountry WITH(NOLOCK)
+
+
+
+GO
+CREATE TABLE [dbo].[LandingPage](
+	[PageId] [smallint] IDENTITY(1,1) NOT NULL,
+	[PageName] [nvarchar](200) NULL,
+	[PageCode] [nvarchar](100) NULL,
+	[IsDeleted] [bit] NULL,
+	[BlockTargetCountry] [varchar](200) NULL,
+	[IsExcluded] [bit] NOT NULL,
+	[IsMobile] [bit] NOT NULL,
+	[DealIds] [nvarchar](max) NOT NULL,
+	[StatusId] [tinyint] NULL,
+ CONSTRAINT [PK_LandingPage] PRIMARY KEY CLUSTERED 
+(
+	[PageId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data] TEXTIMAGE_ON [Setting_Data]
+GO
+
+ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
+GO
+
+ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_IsExcluded]  DEFAULT ((1)) FOR [IsExcluded]
+GO
+
+ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_IsMobile]  DEFAULT ((0)) FOR [IsMobile]
+GO
+
+ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_DealIds]  DEFAULT ('') FOR [DealIds]
+GO
+
+ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_StatusId]  DEFAULT ((1)) FOR [StatusId]
+GO
+
+
+CREATE TABLE [dbo].[Market](
+	[MarketId] [nvarchar](10) NOT NULL,
+	[MarketName] [nvarchar](50) NULL,
+	[MarketNativeName] [nvarchar](50) NULL,
+	[ShortedCode] [nvarchar](10) NULL,
+	[DisplayName] [nvarchar](50) NULL,
+	[IsDeleted] [bit] NULL,
+ CONSTRAINT [PK_Market] PRIMARY KEY CLUSTERED 
+(
+	[MarketId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
+
+ALTER TABLE [dbo].[Market] ADD  DEFAULT ((0)) FOR [IsDeleted]
+GO
+
+CREATE TABLE [dbo].[Country](
+	[CountryCode] [varchar](5) NOT NULL,
+	[CountryName] [varchar](200) NOT NULL,
+ CONSTRAINT [PK_Country] PRIMARY KEY CLUSTERED 
+(
+	[CountryCode] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [Setting_Data]
+GO
+
