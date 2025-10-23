@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_Module_Sel]
 (
 	@ModuleTypes VARCHAR(100) = 'All'
@@ -6,7 +6,7 @@ CREATE PROCEDURE [dbo].[OH_Module_Sel]
 AS
 /*
 	Created: 20250825@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Select Landing Page Modules by Type
 
 	Revisions:  

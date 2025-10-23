@@ -26,7 +26,7 @@ CREATE PROCEDURE [dbo].[OH_SignUp]
 AS
 /*
     Created: 20250910@Sophia
-    DB: DBAFF12B-Affiliate_12B
+    DB: DBOH-ONEHub
     Task: API Sign Up endpoint logging [RedmineID: #236797]
     Revisions:
         - 20250910@Sophia: Initial version [RedmineID: #236797]

@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="1"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="1"></info>*/
 CREATE PROCEDURE [dbo].[OH_PageBuilder_RowVersion_Upd]
     @PageIds VARCHAR(MAX),
     @ErrCode INT = 0 OUTPUT,
@@ -6,7 +6,7 @@ CREATE PROCEDURE [dbo].[OH_PageBuilder_RowVersion_Upd]
 AS
 /*
     Created: 20250915@Sophia
-    DB: DBAFF12B-Affiliate_12B
+    DB: DBOH-ONEHub
     Task: Update RowVersion by updating Creator with its own value
     Revisions:
         - 20250915@Sophia: Initial version [RedmineID: #236797]

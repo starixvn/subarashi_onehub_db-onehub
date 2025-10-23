@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_PageBuilder_Ins]
 	@PageName VARCHAR(200),
 	@PageCode VARCHAR(100),
@@ -17,7 +17,7 @@ CREATE PROCEDURE [dbo].[OH_PageBuilder_Ins]
 AS
 /*
 	Created: 20250904@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Insert Landing Page builder
 	Revisions:
 		- 20250904@Sophia: Initial version [RedmineID: #236797]
@@ -322,7 +322,7 @@ BEGIN
 					ON d.ModuleId = m.ModuleId
 				LEFT JOIN dbo.MediaGallery mg WITH (NOLOCK)
 					ON d.MediaId = mg.MediaId
-				ORDER BY d.OrderId
+				ORDER BY d.OrderId ASC
 				FOR JSON PATH
 			), '[]')) AS 'comp'
 		FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES

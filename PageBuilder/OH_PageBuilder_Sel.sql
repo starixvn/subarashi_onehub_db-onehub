@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_PageBuilder_Sel]
 	@PageCode VARCHAR(100) = '',
     @PageId INT = 0,
@@ -6,7 +6,7 @@ CREATE PROCEDURE [dbo].[OH_PageBuilder_Sel]
 AS
 /*
 	Created: 20250904@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Select Landing Page builder and details
 	Revisions:
 		- 20250904@Sophia: Initial version [RedmineID: #236797]

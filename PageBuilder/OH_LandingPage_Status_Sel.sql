@@ -1,9 +1,9 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_LandingPage_Status_Sel]
 AS
 /*
 	Created: 20250826@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Select Landing Page Status List
 	Revisions:
 		- 20250826@Sophia: Initial version [RedmineID: #236797]

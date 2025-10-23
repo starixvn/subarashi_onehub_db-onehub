@@ -1,9 +1,9 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_Campaign_Status_Sel]
 AS
 /*
 	Created: 20250903@Eddie
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: List of Campaign Status
 	Revisions:
 		- 20250903@Eddie: Initial version [RedmineID: #236797]

@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_PageBuilder_Upd]
 	@PageId INT,
 	@PageName VARCHAR(200) = NULL,
@@ -16,7 +16,7 @@ ALTER PROCEDURE [dbo].[OH_PageBuilder_Upd]
 AS
 	/*
 	Created: 20250910@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Update Landing Page builder
 	Revisions:
 		- 20250910@Sophia: Initial version [RedmineID: #236797]
@@ -205,7 +205,7 @@ BEGIN
 				LEFT JOIN dbo.MediaGallery mg WITH (NOLOCK)
 					ON d.MediaId = mg.MediaId
 				WHERE d.PageId = @PageId
-				ORDER BY d.OrderId
+				ORDER BY d.OrderId ASC
 				FOR JSON PATH
 			), '[]')) AS 'comp'
 		FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
@@ -446,7 +446,7 @@ BEGIN
 						LEFT JOIN dbo.MediaGallery mg WITH (NOLOCK)
 							ON d.MediaId = mg.MediaId
 						WHERE d.PageId = @PageId
-						ORDER BY d.OrderId
+						ORDER BY d.OrderId ASC
 						FOR JSON PATH
 					)
 				END

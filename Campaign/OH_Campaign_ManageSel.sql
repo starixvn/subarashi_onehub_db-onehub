@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_Campaign_ManageSel]
 	@CampaignSearch	VARCHAR(100)  = ''
 	,@StatusIds		VARCHAR(50)   = ''
@@ -11,7 +11,7 @@ AS
 
 /*
 	Created: 20250903@Eddie
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Admin site - Marketing tools - Campaign Management
 
 	Revisions:

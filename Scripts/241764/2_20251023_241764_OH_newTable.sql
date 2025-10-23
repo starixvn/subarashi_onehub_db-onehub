@@ -1,8 +1,7 @@
-
-/*<info serverAlias="DBAFF12B-Affiliate_12B"></info>*/
+/*<info serverAlias="DBOH-ONEHub"></info>*/
 /*
     Created: 20250822@Sophia
-    DB: DBAFF12B-Affiliate_12B
+    DB: DBOH-ONEHub
     Task: New Landing Page Setting [RedmineId : #236797]
         - Create new Landing Page tables (Module, MediaGallery, Setting, Deal)
         - Updated columns and datatypes per latest documentation/screenshots
@@ -262,17 +261,17 @@ GO
 
 ALTER TABLE [dbo].[UserLog_RunSP_Detail] ADD  CONSTRAINT [DF_UserLog_RunSP_Detail_LogDate]  DEFAULT (getdate()) FOR [LogDate]
 
-GO
-CREATE TABLE Language (
-  LangId	varchar(5) NOT NULL,
-  Language	varchar(45) NOT NULL,
- CONSTRAINT [PK_Language] PRIMARY KEY CLUSTERED 
-(
-	[LangId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
-) ON [SETTING_DATA]
+--GO
+--CREATE TABLE Language (
+--  LangId	varchar(5) NOT NULL,
+--  Language	varchar(45) NOT NULL,
+-- CONSTRAINT [PK_Language] PRIMARY KEY CLUSTERED 
+--(
+--	[LangId] ASC
+--)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
+--) ON [SETTING_DATA]
 
-INSERT INTO language VALUES ('bd','Bangla'),('bd_en','English'),('br','Brazilian'),('ch','Traditional Chinese'),('cs','Simple Chinese'),('de','Deutsch'),('el','Greek'),('en','English'),('es','Spanish'),('hi','Hindu'),('hi_en','English'),('hu','Hungarian'),('id','Indonesian'),('id_en','English'),('it','Italian'),('jp','Japanese'),('kh','Khmer'),('kh_en','English'),('ko','Korean'),('mx','Mexican'),('my','Bahasa Malaysia'),('pl','Polish'),('ro','Romanian'),('ru','Russian'),('th','Thai'),('th_en','English'),('vn','Vietnamese'),('zhcn','New Chinese Simplified');
+--INSERT INTO language VALUES ('bd','Bangla'),('bd_en','English'),('br','Brazilian'),('ch','Traditional Chinese'),('cs','Simple Chinese'),('de','Deutsch'),('el','Greek'),('en','English'),('es','Spanish'),('hi','Hindu'),('hi_en','English'),('hu','Hungarian'),('id','Indonesian'),('id_en','English'),('it','Italian'),('jp','Japanese'),('kh','Khmer'),('kh_en','English'),('ko','Korean'),('mx','Mexican'),('my','Bahasa Malaysia'),('pl','Polish'),('ro','Romanian'),('ru','Russian'),('th','Thai'),('th_en','English'),('vn','Vietnamese'),('zhcn','New Chinese Simplified');
 
 
 GO
@@ -291,9 +290,9 @@ CREATE TABLE [dbo].[TargetCountry](
 ) ON [SETTING_DATA]
 GO
 
-INSERT INTO TargetCountry (MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode)
-SELECT MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode
-FROM Affiliate_12B.dbo.TargetCountry WITH(NOLOCK)
+--INSERT INTO TargetCountry (MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode)
+--SELECT MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode
+--FROM Affiliate_12B.dbo.TargetCountry WITH(NOLOCK)
 
 
 

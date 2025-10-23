@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[Aff_LandingPage_Deal_Ins]
 (
 	@DealId INT,
@@ -10,7 +10,7 @@ ALTER PROCEDURE [dbo].[Aff_LandingPage_Deal_Ins]
 AS
 /*
 	Created: 20250825@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Insert Landing Page Deal
 
 	Revisions:  

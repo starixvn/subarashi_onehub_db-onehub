@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_LandingPage_Upd]
 	@UserId				 INT
 	,@PageId			 SMALLINT
@@ -16,7 +16,7 @@ AS
 
 /*
 	Created: 20241118@Eddie
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Admin Site - Media Gallery - Landing Page - Update
 
 	Revisions:

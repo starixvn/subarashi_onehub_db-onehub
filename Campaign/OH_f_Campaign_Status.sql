@@ -1,9 +1,9 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" selecters="wsv_afinet,wsv_afinetv" isFunction="1" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" selecters="wsv_oh" isFunction="1" isNested="0"></info>*/
 CREATE FUNCTION [dbo].[OH_f_Campaign_Status]()
 RETURNS TABLE
 /*
 	Created: 20250903@Eddie
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Table-valued function for Campaign Status
 	Revisions:
 		- 20250903@Eddie: Initial version [RedmineID: #236797]

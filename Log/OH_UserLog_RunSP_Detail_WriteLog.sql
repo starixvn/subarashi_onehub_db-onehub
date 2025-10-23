@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet" isFunction="0" isNested="1"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="1"></info>*/
 CREATE PROCEDURE [dbo].[OH_UserLog_RunSP_Detail_WriteLog]
 	@SPName		VARCHAR(200),
 	@UserId		INT,
@@ -13,7 +13,7 @@ AS
 
 /*
 	Created: 20251021@Danny
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: UserLog - Log data
 	
 	Revisions:

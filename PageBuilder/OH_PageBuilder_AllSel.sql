@@ -1,10 +1,10 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_PageBuilder_AllSel]
 	@IsPreview BIT = 0 -- 0: Main table, 1: Preview table
 AS
 /*
 	Created: 20250913@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Select All Landing Page builder and details data
 	Revisions:
 		- 20250913@Sophia: Initial version [RedmineID: #236797]

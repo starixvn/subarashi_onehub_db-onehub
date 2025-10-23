@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet,wsv_afinetv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_LandingPage_Builder_ManageSel]
 	@CampaignName VARCHAR(200) = '', -- Search in both CampaignName and CampaignCode
 	@PageName VARCHAR(200) = '', -- Search in both PageName and PageCode
@@ -14,7 +14,7 @@ ALTER PROCEDURE [dbo].[OH_LandingPage_Builder_ManageSel]
 AS
 /*
 	Created: 20250826@Sophia
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Manage Landing Page builder
 	Revisions:
 		- 20250826@Sophia: Initial version [RedmineID: #236797]

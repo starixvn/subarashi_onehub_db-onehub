@@ -1,4 +1,4 @@
-/*<info serverAlias="DBAFF12B-Affiliate_12B" executers="wsv_afinet" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_AssetUploader_Del]
 	@UserId			INT
 	,@MediaIds		VARCHAR(MAX)
@@ -10,7 +10,7 @@ AS
 
 /*
 	Created: 20250826@Sally
-	DB: DBAFF12B-Affiliate_12B
+	DB: DBOH-ONEHub
 	Task: Admin - Landing Page - Asset Uploader - Delete Assets (Delete records from LandingPage_MediaGallery table)        
           Admin - Marketing Tools - Registration Form Management - Delete Registration  
           
