@@ -56,8 +56,8 @@ BEGIN
 	--	,@ErrCode	= @ErrCode OUTPUT
 	--	,@ErrMsg	= @ErrMsg OUTPUT
 
-	IF @ErrCode <> 0
-		RETURN
+	--IF @ErrCode <> 0
+	--	RETURN
 
 	DECLARE @tblMediaInfo TABLE (MediaId INT, IsValid BIT)
 
@@ -109,16 +109,15 @@ BEGIN
                 m.FileName AS f,
                 ISNULL(lpm.ModuleName, '') AS m,
                 m.Dimension AS d,
-                ISNULL(ct.CountryName, '') AS tc,
-                ISNULL(l.Language, '') AS l,
+                ISNULL(tc.CountryName, '') AS tc,
+                ISNULL(tc.MarketName, '') AS l,
                 CASE m.StatusId 
                     WHEN 1 THEN 'Active'
                     WHEN 2 THEN 'Inactive'
                 END AS st
             FROM dbo.MediaGallery m WITH (NOLOCK)
                 LEFT JOIN dbo.Module lpm WITH (NOLOCK) ON m.ModuleId = lpm.ModuleId
-                LEFT JOIN dbo.Country ct WITH (NOLOCK) ON m.TargetCountryCode = ct.Code 
-				 LEFT JOIN dbo.Language l WITH (NOLOCK) ON m.MarketId = l.LangId
+                LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON m.TargetCountryCode = tc.CountryCode AND m.MarketId = tc.MarketId
                 INNER JOIN @tblMediaInfo tmp ON tmp.MediaId = m.MediaId
             FOR JSON PATH
         ) AS ai

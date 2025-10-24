@@ -176,18 +176,24 @@ GO
 
 --10. Drop & Create Component
 IF OBJECT_ID('dbo.Component', 'U') IS NOT NULL DROP TABLE dbo.Component;
-CREATE TABLE Component (
-    ComponentId INT NOT NULL IDENTITY(1,1),
-    ComponentName VARCHAR(200) NULL,
-    ComponentType INT NULL, -- FK to ComponentType.ComponentTypeId
-    Creator INT NULL,
-    CreatedDate DATETIME NULL,
-    UpdatedBy INT NULL,
-    UpdatedDate DATETIME NULL,
-    StatusId TINYINT NULL, -- 0: Active, 1: Inactive
-    CONSTRAINT PK_Component PRIMARY KEY CLUSTERED (ComponentId)
-) 
-ON [SETTING_DATA];
+CREATE TABLE [dbo].[Component](
+	[ComponentId] [int] IDENTITY(1,1) NOT NULL,
+	[ComponentName] [varchar](200) NULL,
+	[ComponentTypeId] [int] NULL,
+	[Creator] [int] NULL,
+	[CreatedDate] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[UpdatedDate] [datetime] NULL,
+	[StatusId] [tinyint] NULL,
+	[ComponentCode] [varchar](200) NULL,
+ CONSTRAINT [PK_LandingPage_Component] PRIMARY KEY CLUSTERED 
+(
+	[ComponentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [SETTING_DATA]
+) ON [SETTING_DATA]
+GO
+
+
 GO
 
 
@@ -393,3 +399,35 @@ CREATE TABLE [dbo].[User](
 GO
 
 
+CREATE TABLE [dbo].[SystemSettings](
+	[SID] [int] IDENTITY(1,1) NOT NULL,
+	[SName] [varchar](50) NULL,
+	[SValue] [varchar](200) NULL,
+ CONSTRAINT [PK_SystemSettings] PRIMARY KEY CLUSTERED 
+(
+	[SID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
+
+CREATE TABLE [dbo].[ExchangeOanda](
+	[ExchangeDate] [smalldatetime] NOT NULL,
+	[ExchangeId] [int] NOT NULL,
+	[Code] [varchar](5) NULL,
+	[ActualRate] [float] NULL,
+	[VND] [float] NULL,
+	[EUR] [float] NULL,
+	[USD] [float] NULL,
+	[CNY] [float] NULL,
+	[MYR] [float] NULL,
+	[THB] [float] NULL,
+	[IDR] [float] NULL,
+	[BDT] [float] NULL,
+	[INR] [float] NULL,
+ CONSTRAINT [PK_ExchangeOanda] PRIMARY KEY CLUSTERED 
+(
+	[ExchangeDate] ASC,
+	[ExchangeId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO

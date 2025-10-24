@@ -120,3 +120,17 @@ ALTER DATABASE [ONEHub] SET  READ_WRITE
 GO
 
 
+
+USE [master]
+GO
+/* For security reasons the login is created disabled and with a random password.*/
+/****** Object:  Login [wsv_oh]    Script Date: 10/27/2025 10:42:44 AM ******/
+CREATE LOGIN [wsv_oh] WITH PASSWORD=N'Hicw2/c6/uZpMQ/zPgWh74Fr8MJe01avxTYUL9AiGvo=', DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english], CHECK_EXPIRATION=ON, CHECK_POLICY=ON
+GO
+ALTER LOGIN [wsv_oh] DISABLE
+GO
+USE ONEHub
+GO
+/****** Object:  User [wsv_oh]    Script Date: 10/27/2025 9:55:02 AM ******/
+CREATE USER [wsv_oh] FOR LOGIN [wsv_oh] WITH DEFAULT_SCHEMA=[dbo]
+GO
