@@ -1,4 +1,4 @@
-/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh,wsv_ohv" isFunction="0" isNested="0"></info>*/
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_SignUp]
     @Username VARCHAR(50),
     @Email VARCHAR(100) = '',

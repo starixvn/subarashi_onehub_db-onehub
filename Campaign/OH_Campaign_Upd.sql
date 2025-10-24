@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Campaign_Upd]
+ALTER PROCEDURE [dbo].[OH_Campaign_Upd]
 	@UserId   	    INT
 	,@CampaignId	INT
 	,@CampaignName	VARCHAR(500) = NULL
@@ -87,12 +87,7 @@ BEGIN
 		FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
 	);
 
-	-- Get timezone
-	SELECT @TimeZone = CONVERT(TINYINT, SValue)
-	FROM dbo.SystemSettings WITH (NOLOCK)
-	WHERE SName = 'TimeZone';
-
-	SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
+	SELECT @CurrentDate = DATEADD(HOUR, 8, GETUTCDATE());
 	
 	BEGIN TRY
 

@@ -101,15 +101,10 @@ BEGIN
 	SELECT @ModuleName = ModuleName 
 	FROM dbo.Module WITH (NOLOCK) 
 	WHERE ModuleId = @ModuleId
-	
-	SELECT @CountryName = CountryName
-	FROM dbo.Country WITH (NOLOCK) 
-	WHERE Code = @TargetCountrycode 
 
-	SELECT @MarketName = Language
-	FROM dbo.Language WITH (NOLOCK) 
-	WHERE LangId = @MarketId
-
+	SELECT @CountryName = CountryName, @MarketName = MarketName
+	FROM dbo.TargetCountry WITH (NOLOCK) 
+	WHERE CountryCode = @TargetCountrycode AND MarketId = @MarketId
 
 	BEGIN TRY
 		INSERT INTO @tblMediaInfo (MediaName, FileName, Dimension)
@@ -136,7 +131,7 @@ BEGIN
 	) f
 
 	-- Check input params	
-	IF NOT EXISTS (SELECT 1 FROM dbo.Country WITH (NOLOCK) WHERE Code = @TargetCountrycode AND MarketId = @MarketId)
+	IF NOT EXISTS (SELECT 1 FROM dbo.TargetCountry WITH (NOLOCK) WHERE CountryCode = @TargetCountrycode AND MarketId = @MarketId)
 	BEGIN
 		SELECT @ErrCode = 412, @ErrMsg = 'The selected language is not valid for the chosen country. Please select a supported language.'
 		RETURN

@@ -95,8 +95,8 @@ BEGIN
 		  ,f.Status
 		  ,ROW_NUMBER() OVER(ORDER BY cp.CampaignId DESC) AS RowIdx
 	FROM dbo.Campaign cp WITH (NOLOCK)
-		INNER JOIN dbo.Affiliate_User u WITH (NOLOCK) ON u.CustId = cp.Creator
-		INNER JOIN dbo.Affiliate_User au WITH (NOLOCK) ON au.CustId = cp.UpdatedBy
+		INNER JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = cp.Creator
+		INNER JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = cp.UpdatedBy
 		INNER JOIN dbo.OH_f_Campaign_Status() f ON f.StatusId = cp.StatusId
 	WHERE EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = cp.StatusId)
 	AND (

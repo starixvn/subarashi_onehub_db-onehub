@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_PageBuilder_Ins]
+ALTER PROCEDURE [dbo].[OH_PageBuilder_Ins]
 	@PageName VARCHAR(200),
 	@PageCode VARCHAR(100),
 	@CampaignId INT,
@@ -58,12 +58,6 @@ BEGIN
 		SELECT @ErrCode = 1003, @ErrMsg = N'CampaignId is required!';
 		RETURN;
 	END
-
-	--IF ISNULL(@DealIds, '') = ''
-	--BEGIN
-	--	SELECT @ErrCode = 1004, @ErrMsg = N'DealIds is required!';
-	--	RETURN;
-	--END
 
 	IF @StatusId IS NULL
 	BEGIN
@@ -139,7 +133,6 @@ BEGIN
 			CampaignId,
 			TargetCountryCode,
 			MarketId,
-			--DealIds, 
 			StatusId,
 			Creator,
 			CreatedDate
@@ -150,7 +143,6 @@ BEGIN
 			@CampaignId,
 			@TargetCountryCode,
 			@MarketId,
-			--@DealIds, 
 			@StatusId,
 			@UserId,
 			DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
@@ -190,7 +182,6 @@ BEGIN
 			CampaignId,
 			TargetCountryCode,
 			MarketId,
-			--DealIds, 
 			StatusId,
 			Creator,
 			CreatedDate
@@ -201,7 +192,6 @@ BEGIN
 			@CampaignId,
 			@TargetCountryCode,
 			@MarketId,
-			--@DealIds, 
 			@StatusId,
 			@UserId,
 			DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
@@ -263,14 +253,6 @@ BEGIN
 	FROM dbo.Campaign WITH (NOLOCK)
 	WHERE CampaignId = @CampaignId;
 
-	---- Get Deal names
-	--SELECT @DealNames = STUFF((
-	--	SELECT ', ' + GroupName
-	--	FROM dbo.CommGroup WITH (NOLOCK)
-	--	WHERE GroupId IN (SELECT value FROM STRING_SPLIT(@DealIds, ','))
-	--		AND IsDeleted = 0
-	--	FOR XML PATH('')), 1, 1, '');
-
 	-- Get Status name
 	SELECT @StatusName = Status
 	FROM dbo.OH_f_LandingPage_Status() 
@@ -287,7 +269,6 @@ BEGIN
 					ISNULL(@CountryName, '') AS 'tc',
 					ISNULL(@LanguageName, '') AS 'l',
 					ISNULL(@CampaignName, '') AS 'cn',
-					--ISNULL(@DealNames, '') AS 'dn',
 					ISNULL(@StatusName, '') AS 'st',
 					CAST(@IsPreview AS BIT) AS 'prv'
 				FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
@@ -364,7 +345,6 @@ BEGIN
 			@BlockTargetCountry = @BlockTargetCountry,
 			@IsMobile = @IsMobile,
 			@IsExcluded = @IsExcluded,
-			--@DealIds = @DealIds,
 			@StatusId = @StatusId,
 			@UserId = @UserId,
 			@IP = @IP,

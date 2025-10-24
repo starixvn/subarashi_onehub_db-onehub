@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_LandingPage_Ins]
+ALTER PROCEDURE [dbo].[OH_LandingPage_Ins]
 	@UserId				 INT
 	,@PageName			 NVARCHAR(200)
 	,@PageCode			 NVARCHAR(100)
@@ -7,7 +7,6 @@ CREATE PROCEDURE [dbo].[OH_LandingPage_Ins]
 	,@BlockTargetCountry VARCHAR(200) = ''
 	,@IsMobile	 		 BIT = 0
 	,@IsExcluded 		 BIT = 1
-	--,@DealIds 			 NVARCHAR(MAX) = ''
 	,@StatusId			 TINYINT = 1
 	,@ErrCode			 INT = 0 OUTPUT
 	,@ErrMsg			 NVARCHAR(4000) = '' OUTPUT
@@ -67,17 +66,6 @@ BEGIN
 			RETURN;
 		END;
 		
-		--IF (@IsExcluded = 0 AND ISNULL(@DealIds, '') = '')
-		--BEGIN
-		--	SELECT @ErrCode = 104, @ErrMsg = 'Please select at least a deal.';
-		--	RETURN;
-		--END;
-	
-		--IF (@IsExcluded = 1 AND @DealIds = '0')
-		--BEGIN
-		--	SELECT @ErrCode = 105, @ErrMsg = 'Please deselect at least a deal.';
-		--	RETURN;
-		--END;
 	END;
 
 	BEGIN TRY
@@ -100,7 +88,6 @@ BEGIN
 								  'BlockTargetCountry=' + @BlockTargetCountry,
 								  'IsMobile=' + CONVERT(VARCHAR(2), @IsMobile),
 								  'IsExcluded=' + CONVERT(VARCHAR(2), @IsExcluded),
-								 -- 'DealIds=' + @DealIds,
 								  'StatusId=' + CONVERT(VARCHAR(2), @StatusId)
 				   );
 

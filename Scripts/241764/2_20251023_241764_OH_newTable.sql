@@ -3,7 +3,7 @@
     Created: 20250822@Sophia
     DB: DBOH-ONEHub
     Task: New Landing Page Setting [RedmineId : #236797]
-        - Create new Landing Page tables (Module, MediaGallery, Setting, Deal)
+        - Create new Landing Page tables (Module, MediaGallery, Setting)
         - Updated columns and datatypes per latest documentation/screenshots
 */
 
@@ -64,23 +64,6 @@ CREATE TABLE MediaCode (
 ) 
 ON [SETTING_DATA];
 
----- 3. Drop & Create Deal
---IF OBJECT_ID('dbo.Deal', 'U') IS NOT NULL DROP TABLE dbo.Deal;
---CREATE TABLE Deal (
---    Id SMALLINT IDENTITY(1,1) NOT NULL,
---    DealId INT NOT NULL,
---    Creator INT NOT NULL,
---    CreatedDate DATETIME NOT NULL,
---    UpdatedBy INT NULL,
---    UpdatedDate DATETIME NULL,
---    StatusId TINYINT NOT NULL, -- 1: active, 0: inactive
---    CONSTRAINT PK_Deal PRIMARY KEY NONCLUSTERED (Id)
---) 
---ON [SETTING_DATA];
-
---CREATE CLUSTERED INDEX CIX_Deal_DealId 
---ON Deal (DealId)
---ON [SETTING_DATA];
 
 -- 4. Drop & Create Builder
 IF OBJECT_ID('dbo.PageBuilder', 'U') IS NOT NULL DROP TABLE dbo.PageBuilder;
@@ -91,7 +74,6 @@ CREATE TABLE PageBuilder (
     CampaignId INT NULL,
     TargetCountryCode VARCHAR(50) NOT NULL,
     MarketId VARCHAR(50) NOT NULL,
-    --DealIds VARCHAR(2000) NULL,
     StatusId TINYINT NULL,
     Creator INT NOT NULL,
     CreatedDate DATETIME NOT NULL,
@@ -117,7 +99,6 @@ CREATE TABLE PageBuilder_Preview (
     CampaignId INT NULL,
     TargetCountryCode VARCHAR(50) NOT NULL,
     MarketId VARCHAR(50) NOT NULL,
-    DealIds VARCHAR(2000) NULL,
     StatusId TINYINT NULL,
     Creator INT NOT NULL,
     CreatedDate DATETIME NOT NULL,
@@ -297,6 +278,7 @@ GO
 
 
 GO
+DROP TABLE IF EXISTS LandingPage
 CREATE TABLE [dbo].[LandingPage](
 	[PageId] [smallint] IDENTITY(1,1) NOT NULL,
 	[PageName] [nvarchar](200) NULL,
@@ -305,13 +287,12 @@ CREATE TABLE [dbo].[LandingPage](
 	[BlockTargetCountry] [varchar](200) NULL,
 	[IsExcluded] [bit] NOT NULL,
 	[IsMobile] [bit] NOT NULL,
-	[DealIds] [nvarchar](max) NOT NULL,
 	[StatusId] [tinyint] NULL,
  CONSTRAINT [PK_LandingPage] PRIMARY KEY CLUSTERED 
 (
 	[PageId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
-) ON [Setting_Data] TEXTIMAGE_ON [Setting_Data]
+) ON [Setting_Data] 
 GO
 
 ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
@@ -323,8 +304,6 @@ GO
 ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_IsMobile]  DEFAULT ((0)) FOR [IsMobile]
 GO
 
-ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_DealIds]  DEFAULT ('') FOR [DealIds]
-GO
 
 ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_StatusId]  DEFAULT ((1)) FOR [StatusId]
 GO
@@ -356,4 +335,61 @@ CREATE TABLE [dbo].[Country](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [Setting_Data]
 GO
+
+
+
+CREATE TABLE [dbo].[Exchange](
+	[ExchangeId] [int] NOT NULL,
+	[Code] [varchar](5) NULL,
+	[MultipliedBy] [int] NULL,
+	[CountryCode] [varchar](5) NULL,
+ CONSTRAINT [PK_Exchange] PRIMARY KEY CLUSTERED 
+(
+	[ExchangeId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
+
+ALTER TABLE [dbo].[Exchange] ADD  CONSTRAINT [DF_Exchange_MultipliedBy]  DEFAULT ((0)) FOR [MultipliedBy]
+GO
+
+
+
+CREATE TABLE [dbo].[TpExchange](
+	[TpExchangeId] [int] NOT NULL,
+	[ExchangeId] [int] NULL,
+	[CountryCode] [varchar](5) NULL,
+ CONSTRAINT [PK_TpExchange] PRIMARY KEY NONCLUSTERED 
+(
+	[TpExchangeId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
+
+
+GO
+CREATE TABLE [dbo].[User](
+	[CustId] [int] IDENTITY(1000000000,1) NOT NULL,
+	[PageAccess] [nvarchar](500) NULL,
+	[CreateDate] [datetime] NULL,
+	[Creator] [int] NULL,
+	[GroupId] [int] NULL,
+	[Closed] [bit] NULL,
+	[LoginCount] [tinyint] NULL,
+	[IPLogin] [varchar](20) NULL,
+	[LastLogged] [smalldatetime] NULL,
+	[On_SessionId] [int] NULL,
+	[UserName] [varchar](30) NULL,
+	[UserPwd] [varchar](40) NULL,
+	[RoleId] [tinyint] NULL,
+	[PwdExpiry] [datetime] NULL,
+	[FirstName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Affiliate_User] PRIMARY KEY CLUSTERED 
+(
+	[CustId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
+
 

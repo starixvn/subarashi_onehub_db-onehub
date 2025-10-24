@@ -5,7 +5,6 @@ ALTER PROCEDURE [dbo].[OH_PageBuilder_Upd]
 	@CampaignId INT = NULL,
 	@TargetCountryCode VARCHAR(50) = NULL,
 	@MarketId VARCHAR(50) = NULL,
-	--@DealIds VARCHAR(2000) = NULL,
 	@ComponentStructure NVARCHAR(MAX) = NULL,--- Json format
 	@StatusId TINYINT = NULL,
 	@IsUpdStatus BIT = 0, -- 1: Only update StatusId, 0: Update all provided columns
@@ -82,7 +81,6 @@ BEGIN
 	FROM dbo.LandingPage WITH (NOLOCK)
 	WHERE PageCode = @PageCode
 
-
 	IF @IsUpdStatus = 0
 	BEGIN	
 
@@ -119,7 +117,6 @@ BEGIN
 	DECLARE @OldLanguageName NVARCHAR(100), 
 			@OldCountryName NVARCHAR(100),
 			@OldCampaignName NVARCHAR(500),
-			@OldDealNames NVARCHAR(2000),
 			@OldStatusName NVARCHAR(50),
 			@OldData NVARCHAR(MAX);
 
@@ -144,19 +141,6 @@ BEGIN
 	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON s.StatusId = b.StatusId
 	WHERE b.PageId = @PageId;
 
-	-- Get old deal names
-	--SELECT @OldDealNames = STUFF((
-	--	SELECT ', ' + GroupName
-	--	FROM dbo.CommGroup WITH (NOLOCK)
-	--	WHERE GroupId IN (
-	--		SELECT value 
-	--		FROM dbo.LandingPage_Builder b WITH (NOLOCK)
-	--		CROSS APPLY STRING_SPLIT(b.DealIds, ',')
-	--		WHERE b.PageId = @PageId
-	--	)
-	--	AND IsDeleted = 0
-	--	FOR XML PATH('')), 1, 1, '');
-
 	-- Create @OldData JSON
 	SELECT @OldData = ISNULL((
 		SELECT 
@@ -168,7 +152,6 @@ BEGIN
 					@OldCountryName AS 'tc',
 					@OldLanguageName AS 'l',
 					@OldCampaignName AS 'cn',
-					--@OldDealNames AS 'dn',
 					@OldStatusName AS 'st'
 				FROM dbo.PageBuilder b WITH (NOLOCK)
 				WHERE b.PageId = @PageId
@@ -229,7 +212,6 @@ BEGIN
 			CampaignId = ISNULL(@CampaignId, CampaignId),
 			TargetCountryCode = ISNULL(@TargetCountryCode, TargetCountryCode),
 			MarketId = ISNULL(@MarketId, MarketId),
-			--DealIds = ISNULL(@DealIds, DealIds),
 			StatusId = ISNULL(@StatusId, StatusId),
 			UpdatedBy = @UserId,
 			UpdatedDate = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
@@ -285,20 +267,17 @@ BEGIN
 			-- Check if any values are different from the current values in LandingPage
 			DECLARE @CurrentPageName VARCHAR(200),
 					@CurrentBlockTargetCountry VARCHAR(500),
-					@CurrentDealIds VARCHAR(2000),
 					@CurrentStatusId TINYINT,
 					@NeedsUpdate BIT = 0;
 
 			SELECT @CurrentPageName = PageName,
 					@CurrentBlockTargetCountry = BlockTargetCountry,
-					@CurrentDealIds = DealIds,
 					@CurrentStatusId = StatusId
 			FROM dbo.LandingPage WITH (NOLOCK)
 			WHERE PageId = @LandingPageId;
 
 			IF (@PageName IS NOT NULL AND @PageName <> @CurrentPageName)
 				OR (@BlockedCountries IS NOT NULL AND @BlockedCountries <> @CurrentBlockTargetCountry)
-				--OR (@DealIds IS NOT NULL AND @DealIds <> @CurrentDealIds)
 				OR (@StatusId IS NOT NULL AND @StatusId <> @CurrentStatusId)
 			BEGIN
 				SET @NeedsUpdate = 1;
@@ -319,7 +298,6 @@ BEGIN
 						@BlockTargetCountry = @CurrentBlockTargetCountry,
 						@IsMobile = 1,
 						@IsExcluded = 0,
-						--@DealIds = @CurrentDealIds,
 						@StatusId = @StatusId, --- Just Update StatusId
 						@UserId = @UserId,
 						@IP = @IP,
@@ -335,7 +313,6 @@ BEGIN
 						@BlockTargetCountry = @BlockedCountries,
 						@IsMobile = 1,
 						@IsExcluded = 0,
-						--@DealIds = @DealIds,
 						@StatusId = @StatusId,
 						@UserId = @UserId,
 						@IP = @IP,
@@ -386,17 +363,6 @@ BEGIN
 	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON s.StatusId = b.StatusId
 	WHERE b.PageId = @PageId;
 
-	---- Get Deal names for new data
-	--SELECT @NewDealNames = STUFF((
-	--	SELECT ', ' + GroupName
-	--	FROM dbo.CommGroup WITH (NOLOCK)
-	--	WHERE GroupId IN (
-	--		SELECT value 
-	--		FROM STRING_SPLIT(ISNULL(@DealIds, (SELECT DealIds FROM dbo.LandingPage_Builder WHERE PageId = @PageId)), ',')
-	--	)
-	--	AND IsDeleted = 0
-	--	FOR XML PATH('')), 1, 1, '');
-
 	-- Create @NewData JSON
 	SELECT @NewData = ISNULL((
 		SELECT 
@@ -408,7 +374,6 @@ BEGIN
 					@NewCountryName AS 'tc',
 					@NewLanguageName AS 'l',
 					@NewCampaignName AS 'cn',
-					@NewDealNames AS 'dn',
 					@NewStatusName AS 'st'
 				FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
 			), '{}')) AS 'page',

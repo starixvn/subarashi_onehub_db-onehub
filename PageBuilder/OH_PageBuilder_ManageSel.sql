@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-ALTER PROCEDURE [dbo].[OH_LandingPage_Builder_ManageSel]
+CREATE PROCEDURE [dbo].[OH_LandingPage_Builder_ManageSel]
 	@CampaignName VARCHAR(200) = '', -- Search in both CampaignName and CampaignCode
 	@PageName VARCHAR(200) = '', -- Search in both PageName and PageCode
 	@TargetCountryCodes VARCHAR(500) = '',
@@ -36,9 +36,6 @@ BEGIN
         MarketId VARCHAR(50),
         Language VARCHAR(100),
         TargetLanguageCode VARCHAR(10),
-        DealIds VARCHAR(2000),
-        --Deals NVARCHAR(MAX),
-        NoOfDeals INT,
         CreatedDate DATETIME,
         CreatedBy VARCHAR(100),
         LastModifiedBy VARCHAR(100),
@@ -52,9 +49,7 @@ BEGIN
     INSERT INTO #Data (
         CampaignCode, CampaignName, PageName, PageCode, 
         TargetCountryCode, TargetCountryName, MarketId, Language, TargetLanguageCode,
-        DealIds, 
-		--Deals, 
-		NoOfDeals, CreatedDate, CreatedBy, 
+        CreatedDate, CreatedBy, 
         LastModifiedBy, LastModifiedDate, StatusId, Status, PageId, RowIdx
     )
 	SELECT
@@ -67,15 +62,6 @@ BEGIN
 		b.MarketId,
 		m.MarketName AS Language,
 		ISNULL(lcm.TargetLanguageCode, m.ShortedCode) AS TargetLanguageCode,
-		--b.DealIds,
-		ISNULL(STUFF((
-			SELECT ', ' + cg.GroupName
-			FROM STRING_SPLIT(NULLIF(b.DealIds, ''), ',') s
-			INNER JOIN dbo.CommGroup cg WITH (NOLOCK) ON cg.GroupId = TRIM(s.value)			
-			FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, ''), '') AS Deals,
-		(SELECT COUNT(1) 
-			FROM STRING_SPLIT(NULLIF(b.DealIds, ''), ',') 
-			WHERE TRIM(value) <> '') AS NoOfDeals,
 		b.CreatedDate,
 		u1.UserName AS CreatedBy,
 		u2.UserName AS LastModifiedBy,
@@ -112,13 +98,6 @@ BEGIN
 			@MarketIds = ''
 			OR EXISTS (
 				SELECT 1 FROM STRING_SPLIT(@MarketIds, ',') s WHERE b.MarketId = s.value
-			)
-		)
-		AND (
-			@DealIds = ''
-			OR EXISTS (
-				SELECT 1 FROM STRING_SPLIT(@DealIds, ',') s 
-				WHERE ',' + b.DealIds + ',' LIKE '%,' + s.value + ',%'
 			)
 		)
 		AND (
@@ -162,9 +141,6 @@ BEGIN
         MarketId,
         Language,
         TargetLanguageCode,
-       -- DealIds,
-       -- Deals,
-        NoOfDeals,
         CreatedDate,
         CreatedBy,
         LastModifiedBy,
