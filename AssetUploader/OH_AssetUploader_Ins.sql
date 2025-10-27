@@ -74,16 +74,6 @@ BEGIN
 	DECLARE @Duration INT
 	DECLARE @StartTime DATETIME = GETDATE()
 
-	-- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId
-	--	,@FuncName	= @FunctionName
-	--	,@ErrCode	= @ErrCode OUTPUT
-	--	,@ErrMsg	= @ErrMsg OUTPUT
-
-	--IF @ErrCode <> 0
-	--	RETURN
-
 	DECLARE @tblMediaInfo TABLE (MediaName VARCHAR(200), FileName VARCHAR(200), Dimension VARCHAR(20), FileNameNoPath VARCHAR(200))
     DECLARE @tblMediaCode TABLE (RowNum INT IDENTITY(1,1), MediaId INT, MediaCode VARCHAR(10))
 
@@ -96,7 +86,12 @@ BEGIN
 		,@MarketName VARCHAR(100)		   = ''
 		,@batchSize INT				   	   = 0
 
-	SELECT @CurentDateTime = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
+	SELECT @CurentDateTime = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 
 	SELECT @ModuleName = ModuleName 
 	FROM dbo.Module WITH (NOLOCK) 
@@ -126,8 +121,6 @@ BEGIN
 	FROM @tblMediaInfo t
 	CROSS APPLY (
 		SELECT RIGHT(t.FileName, CHARINDEX('/', REVERSE(t.FileName)) - 1) FileNameNoPath -- Simple approach
-		--SELECT TOP 1 val AS FileNameNoPath FROM dbo.Aff_f_StringSplit(t.FileName, '/')
-		--ORDER BY Id DESC
 	) f
 
 	-- Check input params	
@@ -185,8 +178,6 @@ BEGIN
 		FROM dbo.MediaGallery m WITH (NOLOCK)			
 			CROSS APPLY (
 				SELECT RIGHT(m.FileName, CHARINDEX('/', REVERSE(m.FileName)) - 1) FileNameNoPath
-				--SELECT TOP 1 val AS FileNameNoPath FROM dbo.Aff_f_StringSplit(m.FileName, '/')
-				--ORDER BY Id DESC
 			) f
 			INNER JOIN @tblMediaInfo b ON b.FileNameNoPath = f.FileNameNoPath
 	) 

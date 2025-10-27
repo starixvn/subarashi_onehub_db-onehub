@@ -29,8 +29,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	
-	DECLARE @TimeZone 	 	TINYINT
-		  , @CurrentDate 	DATETIME
+	DECLARE @CurrentDate 	DATETIME
 		  , @Status 		NVARCHAR(50)
 		  , @Language 	 	NVARCHAR(5) = 'en-US'
 		  , @StartTime 	 	DATETIME = GETDATE()
@@ -39,15 +38,6 @@ BEGIN
 		  , @SPName 	 	VARCHAR(200) = OBJECT_NAME(@@PROCID)
 		  , @OldData 	 	NVARCHAR(MAX)
 		  , @NewData 	 	NVARCHAR(MAX);
-	
-	----Check permission
-	--EXEC dbo.Aff_Con_CheckPermission @CustID = @UserId
-	--								,@FuncName = '[AllCampaigns]'
-	--								,@ErrCode = @ErrCode OUTPUT
-	--								,@ErrMsg = @ErrMsg OUTPUT;
-	
-	--IF @ErrCode <> 0
-	--	RETURN;
 	
 	-- Validate input
 	BEGIN
@@ -62,7 +52,7 @@ BEGIN
 			RETURN;
 		END
 		
-		IF EXISTS ( SELECT 1 FROM dbo.LandingPage_Campaign WITH (NOLOCK) WHERE CampaignName = @CampaignName AND CampaignId <> @CampaignId )
+		IF EXISTS ( SELECT 1 FROM dbo.Campaign WITH (NOLOCK) WHERE CampaignName = @CampaignName AND CampaignId <> @CampaignId )
 		BEGIN
 			SELECT @ErrCode = 1002
 			     , @ErrMsg = N'This campaign name already exists. Please enter a different name.';
@@ -87,7 +77,12 @@ BEGIN
 		FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
 	);
 
-	SELECT @CurrentDate = DATEADD(HOUR, 8, GETUTCDATE());
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
+	SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
 	
 	BEGIN TRY
 

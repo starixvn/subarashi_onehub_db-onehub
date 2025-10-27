@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" selecters="wsv_oh" isFunction="1" isNested="0"></info>*/
-CREATE FUNCTION [dbo].[Aff_f_GetTargetLanguageCode]()
+CREATE FUNCTION [dbo].[OH_f_GetTargetLanguageCode]()
 RETURNS TABLE
 AS
 /*

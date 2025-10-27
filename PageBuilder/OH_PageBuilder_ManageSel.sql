@@ -73,11 +73,11 @@ BEGIN
 	FROM dbo.PageBuilder b WITH (NOLOCK)
 	LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND b.MarketId = tc.MarketId
 	LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
-	LEFT JOIN dbo.Aff_f_GetTargetLanguageCode() lcm ON m.ShortedCode = lcm.ShortedCode
-	LEFT JOIN dbo.Aff_f_LandingPage_Status() s ON b.StatusId = s.StatusId
-	LEFT JOIN dbo.LandingPage_Campaign c WITH (NOLOCK) ON b.CampaignId = c.CampaignId
-	LEFT JOIN dbo.Affiliate_User u1 WITH (NOLOCK) ON u1.CustId = b.Creator
-	LEFT JOIN dbo.Affiliate_User u2 WITH (NOLOCK) ON u2.CustId = b.UpdatedBy
+	LEFT JOIN dbo.OH_f_GetTargetLanguageCode() lcm ON m.ShortedCode = lcm.ShortedCode
+	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON b.StatusId = s.StatusId
+	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON b.CampaignId = c.CampaignId
+	LEFT JOIN dbo."User" u1 WITH (NOLOCK) ON u1.CustId = b.Creator
+	LEFT JOIN dbo."User" u2 WITH (NOLOCK) ON u2.CustId = b.UpdatedBy
 	WHERE
 		(@CampaignName = '' 
 			OR c.CampaignName LIKE '%' + @CampaignName + '%'
@@ -148,7 +148,11 @@ BEGIN
         StatusId,
         Status,
         PageId,
-        RowIdx
+        RowIdx,
+		0 AS Click,
+		0 AS Registration,
+		0 AS FTD,
+		0 AS Revenue
     FROM #Data
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY PageId DESC;

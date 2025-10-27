@@ -82,17 +82,11 @@ BEGIN
 		,@DependentMediaNames   VARCHAR(200) 	= NULL
 		,@CurentDateTime DATETIME				= NULL
 
-	SELECT @CurentDateTime = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
-
-	---- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId
-	--	,@FuncName	= @FunctionName
-	--	,@ErrCode	= @ErrCode OUTPUT
-	--	,@ErrMsg	= @ErrMsg OUTPUT
-
-	--IF @ErrCode <> 0
-	--	RETURN
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+	SELECT @CurentDateTime = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 
 	IF NOT EXISTS (SELECT 1 FROM dbo.MediaGallery m WITH (NOLOCK) WHERE m.MediaId = @MediaId)
 		OR (@MediaId IS NULL)

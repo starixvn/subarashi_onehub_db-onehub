@@ -51,20 +51,15 @@ BEGIN
 	DECLARE @Duration INT
 	DECLARE @StartTime DATETIME = GETDATE()
 
-	---- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId
-	--	,@FuncName	= @FunctionName
-	--	,@ErrCode	= @ErrCode OUTPUT
-	--	,@ErrMsg	= @ErrMsg OUTPUT
-
-	--IF @ErrCode <> 0
-	--	RETURN
-
 	DECLARE @tmpMediaInfo TABLE (MediaId INT, IsValid BIT)
 	DECLARE @CurentDateTime DATETIME = NULL
 
-	SELECT @CurentDateTime = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
+	SELECT @CurentDateTime = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 
 	BEGIN TRY
 		INSERT INTO @tmpMediaInfo (MediaId, IsValid)

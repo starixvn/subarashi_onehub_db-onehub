@@ -48,7 +48,6 @@ BEGIN
     FROM STRING_SPLIT(@StatusIds, ',') f2;
 	
     DROP TABLE IF EXISTS #data;
-
     CREATE TABLE #data
     (
         CampaignId      INT

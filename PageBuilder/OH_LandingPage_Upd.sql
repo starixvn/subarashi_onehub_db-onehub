@@ -39,22 +39,6 @@ BEGIN
 		  , @OldStatusId		   TINYINT
 		  , @Default_PageId 	   SMALLINT
 
-	-- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId,
-	--	@FuncName	= '[MEDIA]',
-	--	@ErrCode	= @ErrCode OUTPUT,
-	--	@ErrMsg		= @ErrMsg OUTPUT
-
-	--IF @ErrCode <> 0
-	--	RETURN
-
-	-- Default pagecode
-	--SELECT @Default_PageId = CONVERT(SMALLINT, SValue)
-	--FROM Affiliate_12B.dbo.SystemSettings WITH (NOLOCK)
-	--WHERE SName = 'LandingPage'
-
-
 	SELECT @PageName = ISNULL(LTRIM(LTRIM(@PageName)), ''), @PageCode = ISNULL(LTRIM(LTRIM(@PageCode)), '')
 
 	IF @PageName = '' OR @PageCode = ''

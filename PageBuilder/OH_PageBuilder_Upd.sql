@@ -50,30 +50,23 @@ BEGIN
 	DECLARE @StartTime DATETIME = GETDATE();
 	DECLARE @PageCode VARCHAR(100);
 
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
 	-- Get PageCode from the existing record
 	SELECT @PageCode = PageCode
 	FROM dbo.PageBuilder WITH (NOLOCK)
 	WHERE PageId = @PageId;
 
+	DROP TABLE IF EXISTS #ComponentStructure
 	CREATE TABLE #ComponentStructure (
 		OrderId INT,
 		ModuleId INT,
 		MediaId INT,
 		ExtraInfo VARCHAR(8000)
 	);
-
-	-- =========================
-	-- Check permission
-	-- =========================
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId     = @UserId,
-	--	@FuncName   = '[PageBuilder]',
-	--	@ErrCode    = @ErrCode OUTPUT,
-	--	@ErrMsg     = @ErrMsg OUTPUT;
-	--IF @ErrCode <> 0
-	--BEGIN
-	--	RETURN;
-	--END
 
 	-- Get PageId from LandingPage table for validation and update
 	DECLARE @LandingPageId INT;		
@@ -201,7 +194,7 @@ BEGIN
 		UPDATE dbo.PageBuilder WITH (ROWLOCK)
 		SET StatusId = ISNULL(@StatusId, StatusId),
 			UpdatedBy = @UserId,
-			UpdatedDate = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+			UpdatedDate = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 		WHERE PageId = @PageId;
 	END
 	ELSE
@@ -214,7 +207,7 @@ BEGIN
 			MarketId = ISNULL(@MarketId, MarketId),
 			StatusId = ISNULL(@StatusId, StatusId),
 			UpdatedBy = @UserId,
-			UpdatedDate = DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+			UpdatedDate = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 		WHERE PageId = @PageId;
 	
 		IF @ComponentStructure IS NOT NULL
@@ -249,7 +242,6 @@ BEGIN
 			ORDER BY OrderId ASC;
 		END
 	END
-	DROP TABLE #ComponentStructure;
 
 	-- =========================
 	-- Update LandingPage table through Aff_Admin_LandingPage_Upd

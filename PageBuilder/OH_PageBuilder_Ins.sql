@@ -77,21 +77,16 @@ BEGIN
 		ExtraInfo VARCHAR(8000)
 	);
 
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
 	-- =========================
 	-- Check permission
 	-- =========================
 	SET @ErrCode = 0;
 	SET @ErrMsg = '';
-
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId     = @UserId,
-	--	@FuncName   = '[PageBuilder]',
-	--	@ErrCode    = @ErrCode OUTPUT,
-	--	@ErrMsg     = @ErrMsg OUTPUT;
-	--IF @ErrCode <> 0
-	--BEGIN
-	--	RETURN;
-	--END
 
 	-- =========================
 	-- Check duplicate PageCode and PageName (only for main table)
@@ -145,7 +140,7 @@ BEGIN
 			@MarketId,
 			@StatusId,
 			@UserId,
-			DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+			DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 		);
 
 		SET @PageId = SCOPE_IDENTITY();	 
@@ -194,7 +189,7 @@ BEGIN
 			@MarketId,
 			@StatusId,
 			@UserId,
-			DATEADD(HOUR, 8, GETUTCDATE()) -- GMT+8
+			DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 		);
 
 		SET @PageId = SCOPE_IDENTITY();

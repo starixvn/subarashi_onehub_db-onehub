@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[Aff_LandingPage_Component_Upd]
+CREATE PROCEDURE [dbo].[OH_Component_Upd]
     @UserId          INT,
     @ComponentId     INT,
     @ComponentName   VARCHAR(200) = NULL,
@@ -30,8 +30,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @TimeZone     TINYINT
-          , @CurrentDate  DATETIME
+    DECLARE @CurrentDate  DATETIME
           , @Language     NVARCHAR(5) = 'en-US'
           , @StartTime    DATETIME = GETDATE()
           , @EndTime      DATETIME
@@ -39,15 +38,6 @@ BEGIN
           , @SPName       VARCHAR(200) = OBJECT_NAME(@@PROCID)
           , @OldData      NVARCHAR(MAX)
           , @NewData      NVARCHAR(MAX);
-
-    --Check permission
-    --EXEC dbo.Aff_Con_CheckPermission @CustID = @UserId
-    --                                ,@FuncName = '[ComponentManagement]'
-    --                                ,@ErrCode = @ErrCode OUTPUT
-    --                                ,@ErrMsg = @ErrMsg OUTPUT;
-    
-    --IF @ErrCode <> 0
-    --    RETURN;
 
     -- Validate input
     BEGIN
@@ -98,7 +88,11 @@ BEGIN
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     );
 
-    SELECT @CurrentDate = DATEADD(HOUR, 8, GETUTCDATE());
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+    SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
 
     BEGIN TRY
         UPDATE c WITH (ROWLOCK, UPDLOCK)

@@ -29,18 +29,6 @@ BEGIN
 	SET NOCOUNT ON;
 
 	DECLARE @Language VARCHAR(10) = 'en-US';
-
-	---- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId,
-	--	@FuncName	= '[MEDIA]',
-	--	@ErrCode	= @ErrCode OUTPUT,
-	--	@ErrMsg		= @ErrMsg OUTPUT;
-
-	--IF @ErrCode <> 0
-	--BEGIN
-	--	RETURN;
-	--END;
 	
 	SELECT @PageName = ISNULL(LTRIM(LTRIM(@PageName)), ''), @PageCode = ISNULL(LTRIM(LTRIM(@PageCode)), '');
 	

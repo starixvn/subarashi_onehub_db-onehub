@@ -24,8 +24,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 	
-	DECLARE @TimeZone 	 	TINYINT
-		  , @CurrentDate 	DATETIME
+	DECLARE @CurrentDate 	DATETIME
 		  , @Status 		NVARCHAR(50)
 		  , @NewCampaignId  INT
 		  , @CampaignCode   VARCHAR(100)
@@ -35,15 +34,6 @@ BEGIN
 		  , @Duration 		INT
 		  , @SPName 	 	VARCHAR(200) = OBJECT_NAME(@@PROCID)
 		  , @NewData 	 	NVARCHAR(MAX);
-	
-	----Check permission
-	--EXEC dbo.Aff_Con_CheckPermission @CustID = @UserId
-	--								,@FuncName = '[AllCampaigns]'
-	--								,@ErrCode = @ErrCode OUTPUT
-	--								,@ErrMsg = @ErrMsg OUTPUT;
-	
-	--IF @ErrCode <> 0
-	--	RETURN;
 	
 	-- Validate input
 	BEGIN
@@ -71,7 +61,12 @@ BEGIN
 	FROM dbo.OH_f_Campaign_Status()
 	WHERE StatusId = @StatusId
 
-	SELECT @CurrentDate = DATEADD(HOUR, 8, GETUTCDATE());
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
+	SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
 	
 	BEGIN TRY
 		INSERT INTO dbo.Campaign(CampaignName, Description, Creator, CreatedDate, UpdatedBy, UpdatedDate, StatusId)

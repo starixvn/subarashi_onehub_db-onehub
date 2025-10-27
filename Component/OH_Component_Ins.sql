@@ -20,23 +20,13 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @TimeZone        TINYINT
-          , @CurrentDate     DATETIME
+    DECLARE @CurrentDate     DATETIME
           , @Language        NVARCHAR(5) = 'en-US'
           , @StartTime       DATETIME = GETDATE()
           , @EndTime         DATETIME
           , @Duration        INT
           , @SPName          VARCHAR(200) = OBJECT_NAME(@@PROCID)
           , @NewData         NVARCHAR(MAX);
-
-    ----Check permission
-    --EXEC dbo.Aff_Con_CheckPermission @CustID = @UserId
-    --                                ,@FuncName = '[ComponentManagement]'
-    --                                ,@ErrCode = @ErrCode OUTPUT
-    --                                ,@ErrMsg = @ErrMsg OUTPUT;
-    
-    --IF @ErrCode <> 0
-    --    RETURN;
 
     -- Validate input
     BEGIN
@@ -85,7 +75,12 @@ BEGIN
     END
 
     -- Get timezone
-    SELECT @CurrentDate = DATEADD(HOUR, 8, GETUTCDATE());
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+
+    SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
 
     BEGIN TRY
         INSERT INTO dbo.Component

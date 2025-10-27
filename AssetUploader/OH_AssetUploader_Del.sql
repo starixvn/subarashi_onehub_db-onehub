@@ -48,17 +48,6 @@ BEGIN
 
 	DECLARE @Duration INT
 	DECLARE @StartTime DATETIME = GETDATE()
-
-	---- Check permission
-	--EXEC dbo.Aff_Con_CheckPermission
-	--	@CustId		= @UserId
-	--	,@FuncName	= @FunctionName
-	--	,@ErrCode	= @ErrCode OUTPUT
-	--	,@ErrMsg	= @ErrMsg OUTPUT
-
-	--IF @ErrCode <> 0
-	--	RETURN
-
 	DECLARE @tblMediaInfo TABLE (MediaId INT, IsValid BIT)
 
 	BEGIN TRY

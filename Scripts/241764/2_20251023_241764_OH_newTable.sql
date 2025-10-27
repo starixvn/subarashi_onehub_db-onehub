@@ -10,7 +10,7 @@
 use ONEHub
 GO
 -- 1. Drop & Create Module
-IF OBJECT_ID('dbo.Module', 'U') IS NOT NULL DROP TABLE dbo.Module;
+DROP TABLE IF EXISTS dbo.Module;
 CREATE TABLE Module (
     ModuleId INT NOT NULL,
     ModuleName NVARCHAR(200) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE Module (
 ON [SETTING_DATA];
 
 -- 2. Drop & Create MediaGallery
-IF OBJECT_ID('dbo.MediaGallery', 'U') IS NOT NULL DROP TABLE dbo.MediaGallery;
+DROP TABLE IF EXISTS dbo.MediaGallery;
 CREATE TABLE MediaGallery (
     MediaId INT IDENTITY(1,1) NOT NULL,
     MediaName VARCHAR(200) NOT NULL,
@@ -55,7 +55,7 @@ ON MediaGallery (ModuleId)
 ON [SETTING_DATA];
 
 -- 2a. Create MediaCode
-IF OBJECT_ID('dbo.MediaCode', 'U') IS NOT NULL DROP TABLE dbo.MediaCode;
+DROP TABLE IF EXISTS dbo.MediaCode;
 CREATE TABLE MediaCode (
     MediaCodeId INT IDENTITY(1,1) NOT NULL,
     MediaCode VARCHAR(10) NOT NULL,
@@ -66,7 +66,7 @@ ON [SETTING_DATA];
 
 
 -- 4. Drop & Create Builder
-IF OBJECT_ID('dbo.PageBuilder', 'U') IS NOT NULL DROP TABLE dbo.PageBuilder;
+DROP TABLE IF EXISTS dbo.PageBuilder;
 CREATE TABLE PageBuilder (
     PageId INT IDENTITY(1,1) NOT NULL,
     PageName VARCHAR(200) NOT NULL,
@@ -91,7 +91,7 @@ ON [SETTING_DATA];
 GO
 
 -- 5. Drop & Create Builder_Preview
-IF OBJECT_ID('dbo.Builder_Preview', 'U') IS NOT NULL DROP TABLE dbo.PageBuilder_Preview;
+DROP TABLE IF EXISTS dbo.PageBuilder_Preview;
 CREATE TABLE PageBuilder_Preview (
     PageId INT IDENTITY(1,1) NOT NULL,
     PageName VARCHAR(200) NOT NULL,
@@ -111,7 +111,7 @@ ON [SETTING_DATA];
 GO
 
 -- 6. Drop & Create BuilderDetail
-IF OBJECT_ID('dbo.PageBuilderDetail', 'U') IS NOT NULL DROP TABLE dbo.PageBuilderDetail;
+DROP TABLE IF EXISTS dbo.PageBuilderDetail;
 CREATE TABLE PageBuilderDetail (
     PageDetailId INT NOT NULL IDENTITY(1,1),
     PageId INT NOT NULL,
@@ -129,7 +129,7 @@ ON [SETTING_DATA];
 GO
 
 -- 7. Drop & Create BuilderDetail_Preview
-IF OBJECT_ID('dbo.BuilderDetail_Preview', 'U') IS NOT NULL DROP TABLE dbo.PageBuilderDetail_Preview;
+DROP TABLE IF EXISTS dbo.PageBuilderDetail_Preview;
 CREATE TABLE PageBuilderDetail_Preview (
     PageDetailId INT NOT NULL IDENTITY(1,1),
     PageId INT NOT NULL,
@@ -147,7 +147,7 @@ ON [SETTING_DATA];
 GO
 
 -- 8. Drop & Create Campaign
-IF OBJECT_ID('dbo.Campaign', 'U') IS NOT NULL DROP TABLE dbo.Campaign;
+DROP TABLE IF EXISTS dbo.Campaign;
 CREATE TABLE Campaign (
     CampaignId INT NOT NULL IDENTITY(1000,1),
     CampaignName VARCHAR(500) NULL,
@@ -165,7 +165,7 @@ GO
 
 
 -- 9. Drop & Create ComponentType
-IF OBJECT_ID('dbo.ComponentType', 'U') IS NOT NULL DROP TABLE dbo.ComponentType;
+DROP TABLE IF EXISTS dbo.ComponentType;
 CREATE TABLE ComponentType (
     ComponentTypeId INT NOT NULL IDENTITY(1,1),
     ComponentTypeName VARCHAR(100) NULL,
@@ -175,7 +175,7 @@ ON [SETTING_DATA];
 GO
 
 --10. Drop & Create Component
-IF OBJECT_ID('dbo.Component', 'U') IS NOT NULL DROP TABLE dbo.Component;
+DROP TABLE IF EXISTS dbo.[Component];
 CREATE TABLE [dbo].[Component](
 	[ComponentId] [int] IDENTITY(1,1) NOT NULL,
 	[ComponentName] [varchar](200) NULL,
@@ -196,7 +196,7 @@ GO
 
 GO
 
-
+DROP TABLE IF EXISTS dbo.[LogType];
 CREATE TABLE [dbo].[LogType](
 	[TypeId] [smallint] NOT NULL,
 	[TypeName] [nvarchar](50) NULL,
@@ -208,7 +208,7 @@ CREATE TABLE [dbo].[LogType](
 ) ON [LogData]
 GO
 
-
+DROP TABLE IF EXISTS dbo.[LogAction];
 CREATE TABLE [dbo].[LogAction](
 	[ActionId] [int] NOT NULL,
 	[ActionTypeId] [int] NULL,
@@ -225,6 +225,7 @@ CREATE TABLE [dbo].[LogAction](
 GO
 
 
+DROP TABLE IF EXISTS dbo.[UserLog_RunSP_Detail];
 CREATE TABLE [dbo].[UserLog_RunSP_Detail](
 	[LogId] [int] IDENTITY(1,1) NOT NULL,
 	[LogActionId] [int] NULL,
@@ -248,20 +249,9 @@ GO
 
 ALTER TABLE [dbo].[UserLog_RunSP_Detail] ADD  CONSTRAINT [DF_UserLog_RunSP_Detail_LogDate]  DEFAULT (getdate()) FOR [LogDate]
 
---GO
---CREATE TABLE Language (
---  LangId	varchar(5) NOT NULL,
---  Language	varchar(45) NOT NULL,
--- CONSTRAINT [PK_Language] PRIMARY KEY CLUSTERED 
---(
---	[LangId] ASC
---)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
---) ON [SETTING_DATA]
-
---INSERT INTO language VALUES ('bd','Bangla'),('bd_en','English'),('br','Brazilian'),('ch','Traditional Chinese'),('cs','Simple Chinese'),('de','Deutsch'),('el','Greek'),('en','English'),('es','Spanish'),('hi','Hindu'),('hi_en','English'),('hu','Hungarian'),('id','Indonesian'),('id_en','English'),('it','Italian'),('jp','Japanese'),('kh','Khmer'),('kh_en','English'),('ko','Korean'),('mx','Mexican'),('my','Bahasa Malaysia'),('pl','Polish'),('ro','Romanian'),('ru','Russian'),('th','Thai'),('th_en','English'),('vn','Vietnamese'),('zhcn','New Chinese Simplified');
-
 
 GO
+DROP TABLE IF EXISTS dbo.[TargetCountry];
 CREATE TABLE [dbo].[TargetCountry](
 	[MarketID] [varchar](50) NOT NULL,
 	[MarketName] [varchar](100) NULL,
@@ -314,7 +304,7 @@ GO
 ALTER TABLE [dbo].[LandingPage] ADD  CONSTRAINT [DF_LandingPage_StatusId]  DEFAULT ((1)) FOR [StatusId]
 GO
 
-
+DROP TABLE IF EXISTS Market
 CREATE TABLE [dbo].[Market](
 	[MarketId] [nvarchar](10) NOT NULL,
 	[MarketName] [nvarchar](50) NULL,
@@ -332,6 +322,7 @@ GO
 ALTER TABLE [dbo].[Market] ADD  DEFAULT ((0)) FOR [IsDeleted]
 GO
 
+DROP TABLE IF EXISTS Country
 CREATE TABLE [dbo].[Country](
 	[CountryCode] [varchar](5) NOT NULL,
 	[CountryName] [varchar](200) NOT NULL,
@@ -343,7 +334,7 @@ CREATE TABLE [dbo].[Country](
 GO
 
 
-
+DROP TABLE IF EXISTS Exchange
 CREATE TABLE [dbo].[Exchange](
 	[ExchangeId] [int] NOT NULL,
 	[Code] [varchar](5) NULL,
@@ -360,7 +351,7 @@ ALTER TABLE [dbo].[Exchange] ADD  CONSTRAINT [DF_Exchange_MultipliedBy]  DEFAULT
 GO
 
 
-
+DROP TABLE IF EXISTS TpExchange
 CREATE TABLE [dbo].[TpExchange](
 	[TpExchangeId] [int] NOT NULL,
 	[ExchangeId] [int] NULL,
@@ -374,6 +365,7 @@ GO
 
 
 GO
+DROP TABLE IF EXISTS  [dbo].[User]
 CREATE TABLE [dbo].[User](
 	[CustId] [int] IDENTITY(1000000000,1) NOT NULL,
 	[PageAccess] [nvarchar](500) NULL,
@@ -398,7 +390,7 @@ CREATE TABLE [dbo].[User](
 ) ON [Setting_Data]
 GO
 
-
+DROP TABLE IF EXISTS  [dbo].[SystemSettings]
 CREATE TABLE [dbo].[SystemSettings](
 	[SID] [int] IDENTITY(1,1) NOT NULL,
 	[SName] [varchar](50) NULL,
@@ -410,6 +402,7 @@ CREATE TABLE [dbo].[SystemSettings](
 ) ON [Setting_Data]
 GO
 
+DROP TABLE IF EXISTS  [dbo].[ExchangeOanda]
 CREATE TABLE [dbo].[ExchangeOanda](
 	[ExchangeDate] [smalldatetime] NOT NULL,
 	[ExchangeId] [int] NOT NULL,

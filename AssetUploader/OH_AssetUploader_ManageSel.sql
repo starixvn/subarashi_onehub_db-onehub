@@ -76,6 +76,7 @@ AS
 BEGIN
 	SET NOCOUNT ON
 
+	DROP TABLE IF EXISTS #TempLandingPage_MediaGallery
 	CREATE TABLE #TempLandingPage_MediaGallery
 	(
 		MediaId			INT PRIMARY KEY,
@@ -145,6 +146,5 @@ BEGIN
 		) f
 	ORDER BY RowNum ASC
 	
-	DROP TABLE #TempLandingPage_MediaGallery
 END
 GO
