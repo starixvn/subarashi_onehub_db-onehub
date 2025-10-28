@@ -5,6 +5,7 @@ CREATE PROCEDURE [dbo].[OH_Component_Upd]
     @ComponentName   VARCHAR(200) = NULL,
     @ComponentTypeId INT,
     @StatusId        TINYINT = NULL,
+	@DeviceId		 INT = NULL,
     @IP             VARCHAR(50) = '',
     @ErrCode        INT = 0 OUTPUT,
     @ErrMsg         NVARCHAR(4000) = '' OUTPUT
@@ -101,6 +102,7 @@ BEGIN
            ,c.StatusId       = ISNULL(@StatusId, c.StatusId)
            ,c.UpdatedBy      = @UserId
            ,c.UpdatedDate    = @CurrentDate
+		   ,c.CategoryType	 = @DeviceId
         FROM dbo.Component c
         WHERE c.ComponentId = @ComponentId;
 

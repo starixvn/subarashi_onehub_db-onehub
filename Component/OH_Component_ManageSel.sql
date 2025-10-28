@@ -24,7 +24,8 @@ BEGIN
         c.UpdatedDate AS LastModifiedDate,
         au.UserName AS LastModifiedBy,
         c.StatusId,
-        s.Status
+        s.Status,
+		CASE WHEN c.CategoryType = 1 THEN 'Mobile' WHEN c.CategoryType =2 THEN 'Mobile & Desktop' ELSE NULL END Device
     FROM dbo.Component c WITH (NOLOCK)
     LEFT JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = c.Creator
     LEFT JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = c.UpdatedBy

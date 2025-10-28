@@ -180,6 +180,7 @@ CREATE TABLE [dbo].[Component](
 	[ComponentId] [int] IDENTITY(1,1) NOT NULL,
 	[ComponentName] [varchar](200) NULL,
 	[ComponentTypeId] [int] NULL,
+	[CategoryType] [tinyint] NULL,
 	[Creator] [int] NULL,
 	[CreatedDate] [datetime] NULL,
 	[UpdatedBy] [int] NULL,
@@ -424,3 +425,41 @@ CREATE TABLE [dbo].[ExchangeOanda](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
 ) ON [Setting_Data]
 GO
+
+
+DROP TABLE IF EXISTS  [dbo].[MemberInfo]
+CREATE TABLE [dbo].[MemberInfo](
+	[CustId] [int] NOT NULL,
+	[UserName] [varchar](30) NOT NULL,
+	[FirstName] [nvarchar](50) NULL,
+	[LastName] [nvarchar](50) NULL,
+	[Email] [nvarchar](50) NULL,
+	[Currency] [int] NULL,
+	[ActStatus] [tinyint] NULL,
+	[Status] [tinyint] NULL,
+	[RegisteredDate] [datetime] NULL,
+	[IDCode] [varchar](20) NOT NULL,
+	[IBCCustId] [int] NULL,
+	[IBCUserName] [varchar](30) NULL,
+	[CreatedDate] [datetime] NULL,
+	[IsRemoved] [bit] NULL,
+	[Recommend] [int] NULL,
+	[ClickId] [bigint] NULL,
+	[FirstDepositDate] [datetime] NULL,
+	[FirstDepositAmount] [money] NULL,
+	[AffMediaLinkId] [int] NULL,
+	[TagList] [nvarchar](max) NULL,
+ CONSTRAINT [PK_MemberInfo] PRIMARY KEY CLUSTERED 
+(
+	[CustId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Report_Data]
+) ON [Report_Data] TEXTIMAGE_ON [Report_Data]
+GO
+
+ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_IsRemoved]  DEFAULT ((0)) FOR [IsRemoved]
+GO
+
+ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_ClickId]  DEFAULT ((0)) FOR [ClickId]
+GO
+
+

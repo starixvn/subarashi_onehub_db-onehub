@@ -5,6 +5,7 @@ CREATE PROCEDURE [dbo].[OH_Component_Ins]
     @ComponentCode     VARCHAR(200),
     @UserId            INT,
     @StatusId         TINYINT = 1,
+	@DeviceId		  INT = NULL,
     @IP               VARCHAR(50) = '',
     @ComponentId      INT = 0 OUTPUT,
     @ErrCode          INT = 0 OUTPUT,
@@ -15,7 +16,7 @@ AS
     DB: DBAFF12B-Affiliate_12B
     Task: Insert new Landing Page Component
     Revisions:
-        - 20250929@Sophia: Initial version [RedmineID: #239988]
+        - 20250929@Sophia: Initialize SP [RedmineID: #241764]
 */
 BEGIN
     SET NOCOUNT ON;
@@ -90,7 +91,8 @@ BEGIN
             ComponentCode,
             Creator,
             CreatedDate,
-            StatusId
+            StatusId,
+			CategoryType
         )
         VALUES
         (
@@ -99,7 +101,8 @@ BEGIN
             @ComponentCode,
             @UserId,
             @CurrentDate,
-            @StatusId
+            @StatusId,
+			@DeviceId
         );
 
         SELECT @ComponentId = SCOPE_IDENTITY();

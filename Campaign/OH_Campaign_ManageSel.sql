@@ -1,8 +1,7 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Campaign_ManageSel]
-	@CampaignSearch	VARCHAR(100)  = ''
+ALTER PROCEDURE [dbo].[OH_Campaign_ManageSel]
+	@Search			VARCHAR(500)  = ''
 	,@StatusIds		VARCHAR(50)   = ''
-	,@Description	VARCHAR(500)  = ''
 	,@IsExportExcel BIT = 0
 	,@PageIndex 	INT = 1
     ,@PageSize 		INT = 20
@@ -43,9 +42,12 @@ BEGIN
 	
 	DECLARE @Status TABLE (StatusId TINYINT);
 	
-	INSERT INTO @Status(StatusId)
-    SELECT CAST(f2.value AS TINYINT)
-    FROM STRING_SPLIT(@StatusIds, ',') f2;
+	IF @StatusIds <> '' AND @StatusIds IS NOT NULL
+	BEGIN
+		INSERT INTO @Status(StatusId)
+		SELECT CAST(f2.value AS TINYINT)
+		FROM STRING_SPLIT(@StatusIds, ',') f2;
+	END
 	
     DROP TABLE IF EXISTS #data;
     CREATE TABLE #data
@@ -63,6 +65,7 @@ BEGIN
         ,StatusId		TINYINT
         ,Status			VARCHAR(50)
 		,RowIdx			INT
+		,IsAllowDelete  BIT
     );
 	
 	INSERT INTO #data(
@@ -79,6 +82,7 @@ BEGIN
 		,StatusId
 		,Status
 		,RowIdx
+		,IsAllowDelete
 	)
 	SELECT cp.CampaignId
 		  ,cp.CampaignName
@@ -93,16 +97,22 @@ BEGIN
 		  ,cp.StatusId
 		  ,f.Status
 		  ,ROW_NUMBER() OVER(ORDER BY cp.CampaignId DESC) AS RowIdx
+		  ,CASE WHEN x.PageID IS NULL THEN 1 ELSE 0 END AS IsAllowDelete
 	FROM dbo.Campaign cp WITH (NOLOCK)
 		INNER JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = cp.Creator
 		INNER JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = cp.UpdatedBy
 		INNER JOIN dbo.OH_f_Campaign_Status() f ON f.StatusId = cp.StatusId
+		OUTER APPLY(
+			SELECT TOP 1 PageID FROM PageBuilder pb WITH(NOLOCK)
+			WHERE pb.CampaignId = cp.CampaignId
+		) x
 	WHERE EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = cp.StatusId)
 	AND (
-		(cp.CampaignCode LIKE '%' + @CampaignSearch + '%') 
-		OR (cp.CampaignName LIKE '%' + @CampaignSearch + '%')
-		OR  ISNULL(@CampaignSearch, '') = ''
-	)   AND (cp.Description LIKE '%' + @Description + '%' OR ISNULL(@Description, '') = '');
+			(cp.CampaignCode LIKE '%' + @Search + '%') 
+		OR (cp.CampaignName LIKE '%' + @Search + '%')
+		OR  ISNULL(@Search, '') = ''
+		OR cp.Description LIKE '%' + @Search + '%'
+	) ;
 
 
 	-- Get total row count
@@ -136,6 +146,7 @@ BEGIN
 	       ,StatusId
 	       ,Status
 	       ,RowIdx
+		   ,IsAllowDelete
 	FROM #data
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY RowIdx ASC;

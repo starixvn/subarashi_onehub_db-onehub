@@ -1,8 +1,7 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_AssetUploader_Ins]
 	@UserId			INT
-	,@Files			XML
-	,@ModuleId		INT
+	,@Files			NVARCHAR(MAX)
 	,@TargetCountrycode VARCHAR(50) = ''
 	,@MarketId  		VARCHAR(50) = ''
 	,@FunctionName	VARCHAR(50) = '[AssetUploader]'
@@ -55,11 +54,38 @@ AS
             ,@ErrMsg VARCHAR(4000) = '' 
         EXEC dbo.Aff_LandingPage_AssetUploader_Ins
             @UserId = 1000000003
-            ,@Files = N'<root>
-                            <row MediaName="983258e4-20ac-4666-98fc-e507f830bc1b" FileName="Asset/LogoSponsorship/983258e4-20ac-4666-98fc-e507f830bc1b.jpg" Dimension="676x1200"/>
-                            <row MediaName="84fa053d-0bd0-4971-b0ce-aa64f3d880f9" FileName="Asset/LogoSponsorship/84fa053d-0bd0-4971-b0ce-aa64f3d880f9.jpg" Dimension="735x776"/>
-                        </root>'
-            ,@ModuleId  		= 2
+            ,@Files = N'[{
+						  "ModuleId": 5,
+						  "Modulename": "abc",
+						  "Files": [
+							{
+							  "MediaName": "983258e4-20ac-4666-98fc-e507f830bc1b",
+							  "FileName": "Asset/LogoSponsorship/983258e4-20ac-4666-98fc-e507f830bc1b.jpg",
+							  "Dimension": "676x1200"
+							},
+							{
+							  "MediaName": "84fa053d-0bd0-4971-b0ce-aa64f3d880f9",
+							  "FileName": "Asset/LogoSponsorship/84fa053d-0bd0-4971-b0ce-aa64f3d880f9.jpg",
+							  "Dimension": "735x776"
+							}
+						  ]
+						},
+						{
+						  "ModuleId": 4,
+						  "Modulename": "abc",
+						  "Files": [
+							{
+							  "MediaName": "983258e4-20ac-4666-98fc-e507f830bc1b",
+							  "FileName": "Asset/LogoSponsorship/983258e4-20ac-4666-98fc-e507f830bc1b.jpg",
+							  "Dimension": "676x1200"
+							},
+							{
+							  "MediaName": "84fa053d-0bd0-4971-b0ce-aa64f3d880f9",
+							  "FileName": "Asset/LogoSponsorship/84fa053d-0bd0-4971-b0ce-aa64f3d880f9.jpg",
+							  "Dimension": "735x776"
+							}
+						  ]
+						}]'
             ,@TargetCountrycode = 'VN'
             ,@MarketId 			= 'vi-VN'
             ,@IP        = '10.0.0.112'
@@ -74,14 +100,13 @@ BEGIN
 	DECLARE @Duration INT
 	DECLARE @StartTime DATETIME = GETDATE()
 
-	DECLARE @tblMediaInfo TABLE (MediaName VARCHAR(200), FileName VARCHAR(200), Dimension VARCHAR(20), FileNameNoPath VARCHAR(200))
+	DECLARE @tblMediaInfo TABLE (MediaName VARCHAR(200), FileName VARCHAR(200), Dimension VARCHAR(20), FileNameNoPath VARCHAR(200), ModuleId INT, ModuleName VARCHAR(200))
     DECLARE @tblMediaCode TABLE (RowNum INT IDENTITY(1,1), MediaId INT, MediaCode VARCHAR(10))
 
 	DECLARE @DuplicateImages VARCHAR(MAX)  = NULL
         ,@DuplicateMediaNames VARCHAR(MAX) = NULL
 		,@StatusId TINYINT 				   = 1 -- Default to Active
 		,@CurentDateTime DATETIME		   = NULL
-		,@ModuleName VARCHAR(200)		   = ''
 		,@CountryName VARCHAR(100)		   = ''
 		,@MarketName VARCHAR(100)		   = ''
 		,@batchSize INT				   	   = 0
@@ -93,22 +118,31 @@ BEGIN
 
 	SELECT @CurentDateTime = DATEADD(HOUR, @TimeZone, GETUTCDATE()) -- GMT+8
 
-	SELECT @ModuleName = ModuleName 
-	FROM dbo.Module WITH (NOLOCK) 
-	WHERE ModuleId = @ModuleId
-
 	SELECT @CountryName = CountryName, @MarketName = MarketName
 	FROM dbo.TargetCountry WITH (NOLOCK) 
 	WHERE CountryCode = @TargetCountrycode AND MarketId = @MarketId
 
 	BEGIN TRY
-		INSERT INTO @tblMediaInfo (MediaName, FileName, Dimension)
-		SELECT
-            MediaName	=  t.c.value('@MediaName', 'VARCHAR(200)')
-			,FileName	=  t.c.value('@FileName' , 'VARCHAR(200)')
-			,Dimension	=  t.c.value('@Dimension', 'VARCHAR(20)')
-		FROM @Files.nodes('root/row') AS t(c)
-		OPTION (OPTIMIZE FOR (@Files = NULL))
+		INSERT INTO @tblMediaInfo (ModuleId, ModuleName, MediaName, FileName, Dimension)
+		SELECT 
+			j.ModuleId,
+			j.Modulename,
+			r.MediaName,
+			r.FileName,
+			r.Dimension
+		FROM OPENJSON(@json)
+		WITH (
+			ModuleId INT,
+			ModuleName VARCHAR(200),
+			Files NVARCHAR(MAX) AS JSON
+		) j
+		CROSS APPLY OPENJSON(j.Files)
+		WITH (
+			MediaName NVARCHAR(100),
+			FileName NVARCHAR(200),
+			Dimension NVARCHAR(50)
+		) r;
+
 	END TRY
 	BEGIN CATCH
 		SELECT @ErrCode = 401, @ErrMsg = 'Error occurs. Invalid input params.'
@@ -120,7 +154,7 @@ BEGIN
 	SET t.FileNameNoPath = f.FileNameNoPath
 	FROM @tblMediaInfo t
 	CROSS APPLY (
-		SELECT RIGHT(t.FileName, CHARINDEX('/', REVERSE(t.FileName)) - 1) FileNameNoPath -- Simple approach
+		SELECT RIGHT(t.FileName, CHARINDEX('/', REVERSE(t.FileName)) - 1) FileNameNoPath 
 	) f
 
 	-- Check input params	
@@ -130,7 +164,11 @@ BEGIN
 		RETURN
 	END
 
-	IF (SELECT COUNT(1) FROM @tblMediaInfo) > 50
+	IF EXISTS (
+		SELECT COUNT(1), ModuleId FROM @tblMediaInfo 
+		GROUP BY ModuleId
+		HAVING COUNT(1)> 50
+	)
 	BEGIN
 		SELECT @ErrCode = 402, @ErrMsg = 'Upload limit exceeded. You can only upload up to 50 files at a time.'
 		RETURN
@@ -209,12 +247,18 @@ BEGIN
 	-- Insert data
 	BEGIN TRY
 		INSERT INTO dbo.MediaGallery (MediaName, FileName, ModuleId, Dimension, TargetCountryCode, MarketId, StatusId, Creator, CreatedDate)
-		OUTPUT INSERTED.MediaId INTO @tblMediaCode (MediaId)
-		SELECT MediaName, FileName, @ModuleId, Dimension, @TargetCountrycode, @MarketId, @StatusId, @UserId, @CurentDateTime
-		FROM @tblMediaInfo t
+		SELECT MediaName, FileName, ModuleId, Dimension, @TargetCountrycode, @MarketId, @StatusId, @UserId, @CurentDateTime
+		FROM @tblMediaInfo t 
+		WHERE ModuleId <> 9
 
-		IF (@ModuleId = 9) -- Registration Form
+		IF EXISTS (SELECT TOP 1 1 FROM @tblMediaInfo WHERE ModuleId = 9) -- Registration Form
 		BEGIN
+			INSERT INTO dbo.MediaGallery (MediaName, FileName, ModuleId, Dimension, TargetCountryCode, MarketId, StatusId, Creator, CreatedDate)
+			OUTPUT INSERTED.MediaId INTO @tblMediaCode (MediaId)
+			SELECT MediaName, FileName, ModuleId, Dimension, @TargetCountrycode, @MarketId, @StatusId, @UserId, @CurentDateTime
+			FROM @tblMediaInfo t 
+			WHERE ModuleId = 9
+			
 			-- Get MediaCode
 			SET @batchSize = (SELECT COUNT(1) FROM @tblMediaCode)
 
@@ -232,7 +276,7 @@ BEGIN
 			SET t.MediaId = mc.MediaId
 			FROM dbo.MediaCode t WITH (ROWLOCK, UPDLOCK)
 				INNER JOIN CTE_GenerateMediaCode ct ON ct.MediaCodeId = t.MediaCodeId
-				INNER JOIN @tblMediaCode mc ON ct.RowNumm = mc.RowNum
+				INNER JOIN @tblMediaCode mc ON ct.RowNumm = mc.RowNum 
 
 			-- Update MediaCode in LandingPage_MediaGallery
 			UPDATE mg
@@ -249,7 +293,7 @@ BEGIN
 		FROM dbo.MediaGallery m WITH (ROWLOCK)
 		WHERE EXISTS (SELECT 1 FROM @tblMediaCode t WHERE m.MediaId = t.MediaId)
 
-		IF (@ModuleId = 9) -- Registration Form
+		IF EXISTS(SELECT TOP 1 1 FROM @tblMediaInfo WHERE ModuleId = 9) -- Registration Form
 		BEGIN
 			UPDATE mc
 			SET mc.MediaId = NULL
@@ -274,7 +318,7 @@ BEGIN
 				SELECT 
 					s.MediaName	  AS fn,
 					s.FileName	  AS f,
-					@ModuleName	  AS m,	
+					s.ModuleName	  AS m,	
 					s.Dimension	  AS d,
 					@CountryName  AS tc,
 					@MarketName	  AS l,
