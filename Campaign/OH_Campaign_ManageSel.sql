@@ -99,8 +99,8 @@ BEGIN
 		  ,ROW_NUMBER() OVER(ORDER BY cp.CampaignId DESC) AS RowIdx
 		  ,CASE WHEN x.PageID IS NULL THEN 1 ELSE 0 END AS IsAllowDelete
 	FROM dbo.Campaign cp WITH (NOLOCK)
-		INNER JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = cp.Creator
-		INNER JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = cp.UpdatedBy
+		LEFT JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = cp.Creator
+		LEFT JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = cp.UpdatedBy
 		INNER JOIN dbo.OH_f_Campaign_Status() f ON f.StatusId = cp.StatusId
 		OUTER APPLY(
 			SELECT TOP 1 PageID FROM PageBuilder pb WITH(NOLOCK)
