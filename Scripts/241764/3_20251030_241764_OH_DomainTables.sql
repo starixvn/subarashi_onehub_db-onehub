@@ -14,7 +14,7 @@ USE ONEHub;
 GO
 
 -- 1. Drop & Create Domain Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Domain]') AND type IN (N'U'))
+IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Domain]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[Domain];
 END
@@ -36,7 +36,7 @@ CREATE CLUSTERED INDEX IX_Domain_DomainName
 ON Domain (DomainName);
 
 -- 2. Drop & Create DomainDetail Table  
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainDetail]') AND type IN (N'U'))
+IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainDetail]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[DomainDetail];
 END
@@ -61,7 +61,7 @@ CREATE NONCLUSTERED INDEX IX_DomainDetail_Country
 ON DomainDetail (Country);
 
 -- 3. Drop & Create DomainLog Table
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainLog]') AND type IN (N'U'))
+IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainLog]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[DomainLog];
 END

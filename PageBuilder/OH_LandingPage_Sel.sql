@@ -15,8 +15,8 @@ BEGIN
 	
 	; WITH t AS
 	(
-		SELECT PageCode,PageName, CASE WHEN IsMobile = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 0 AS IsComponent
-		FROM LandingPage WITH(NOLOCK)
+		SELECT PageCode,PageName, 'Mobile' Category, 0 AS IsComponent
+		FROM PageBuilder WITH(NOLOCK)
 		UNION ALL
 		SELECT ComponentCode AS PageCode, ComponentName, CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 1 AS IsComponent
 		FROM Component WITH(NOLOCK)

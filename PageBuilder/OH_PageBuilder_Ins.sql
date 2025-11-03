@@ -5,7 +5,6 @@ ALTER PROCEDURE [dbo].[OH_PageBuilder_Ins]
 	@CampaignId INT,
 	@TargetCountryCode VARCHAR(50),
 	@MarketId VARCHAR(50),
-	--@DealIds VARCHAR(2000) = NULL,
 	@ComponentStructure NVARCHAR(MAX) = NULL,--- Json format
 	@StatusId TINYINT = 0,
 	@UserId INT, 
@@ -310,49 +309,12 @@ BEGIN
 	
 	EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
 		@UserId		= @UserId,
-		@AffId		= 0,
 		@SPName		= @SPName,
 		@NewData	= @NewData,
 		@IP			= @IP,
 		@Language	= @Language,
 		@Duration	= @Duration;
 
-	-- Call Aff_Admin_LandingPage_Ins after successful insert
-	IF @ErrCode = 0 AND @IsPreview = 0 -- Only call for main table, not preview
-	BEGIN
-		-- Get all target countries except the current one
-		DECLARE @BlockTargetCountry VARCHAR(500);
-		SELECT @BlockTargetCountry = STUFF((
-			SELECT DISTINCT ',' + CountryCode
-			FROM dbo.TargetCountry WITH (NOLOCK)
-			WHERE CountryCode <> @TargetCountryCode
-			FOR XML PATH('')
-		), 1, 1, '');
-
-		DECLARE @IsMobile BIT = 1; -- Set to mobile version
-		DECLARE @IsExcluded BIT = 0;
-		DECLARE @LandingPageErrCode INT = 0;
-		DECLARE @LandingPageErrMsg NVARCHAR(MAX) = '';
-
-		EXEC dbo.OH_LandingPage_Ins
-			@PageCode = @PageCode,
-			@PageName = @PageName,
-			@BlockTargetCountry = @BlockTargetCountry,
-			@IsMobile = @IsMobile,
-			@IsExcluded = @IsExcluded,
-			@StatusId = @StatusId,
-			@UserId = @UserId,
-			@IP = @IP,
-			@ErrCode = @LandingPageErrCode OUTPUT,
-			@ErrMsg = @LandingPageErrMsg OUTPUT;
-
-		-- If Aff_Admin_LandingPage_Ins fails, propagate the error
-		IF @LandingPageErrCode <> 0
-		BEGIN
-			SET @ErrCode = @LandingPageErrCode;
-			SET @ErrMsg = @LandingPageErrMsg;
-		END
-	END
 
     DROP TABLE #ComponentStructure;
 END;

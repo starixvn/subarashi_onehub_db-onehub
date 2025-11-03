@@ -268,56 +268,6 @@ BEGIN
 			FROM dbo.LandingPage WITH (NOLOCK)
 			WHERE PageId = @LandingPageId;
 
-			IF (@PageName IS NOT NULL AND @PageName <> @CurrentPageName)
-				OR (@BlockedCountries IS NOT NULL AND @BlockedCountries <> @CurrentBlockTargetCountry)
-				OR (@StatusId IS NOT NULL AND @StatusId <> @CurrentStatusId)
-			BEGIN
-				SET @NeedsUpdate = 1;
-			END
-
-			-- Only call Aff_Admin_LandingPage_Upd if there are changes
-			IF @NeedsUpdate = 1
-			BEGIN
-				DECLARE @AdminErrCode INT = 0;
-				DECLARE @AdminErrMsg NVARCHAR(4000) = '';
-
-				IF @IsUpdStatus = 1
-				BEGIN
-					EXEC dbo.OH_LandingPage_Upd
-						@PageId = @LandingPageId,
-						@PageCode = @PageCode,
-						@PageName = @CurrentPageName,
-						@BlockTargetCountry = @CurrentBlockTargetCountry,
-						@IsMobile = 1,
-						@IsExcluded = 0,
-						@StatusId = @StatusId, --- Just Update StatusId
-						@UserId = @UserId,
-						@IP = @IP,
-						@ErrCode = @AdminErrCode OUTPUT,
-						@ErrMsg = @AdminErrMsg OUTPUT;
-				END
-				ELSE
-				BEGIN
-					EXEC dbo.OH_LandingPage_Upd
-						@PageId = @LandingPageId,
-						@PageCode = @PageCode,
-						@PageName = @PageName,
-						@BlockTargetCountry = @BlockedCountries,
-						@IsMobile = 1,
-						@IsExcluded = 0,
-						@StatusId = @StatusId,
-						@UserId = @UserId,
-						@IP = @IP,
-						@ErrCode = @AdminErrCode OUTPUT,
-						@ErrMsg = @AdminErrMsg OUTPUT;
-				END
-
-				IF @AdminErrCode <> 0
-				BEGIN
-					SELECT @ErrCode = @AdminErrCode, @ErrMsg = @AdminErrMsg;
-					RETURN;
-				END
-			END -- End of @NeedsUpdate = 1
 		END
 
 	-- =========================
@@ -417,7 +367,6 @@ BEGIN
 	
 	EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
 		@UserId		= @UserId,
-		@AffId		= 0,
 		@SPName		= @SPName,
 		@OldData	= @OldData,
 		@NewData	= @NewData,

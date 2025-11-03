@@ -130,7 +130,7 @@ BEGIN
 			r.MediaName,
 			r.FileName,
 			r.Dimension
-		FROM OPENJSON(@json)
+		FROM OPENJSON(@Files)
 		WITH (
 			ModuleId INT,
 			ModuleName VARCHAR(200),
@@ -331,7 +331,6 @@ BEGIN
 
 	EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
 		@UserId		= @UserId,
-		@AffId		= 0,
 		@SPName		= @SPName,
 		@NewData	= @NewData,
 		@IP			= @IP,

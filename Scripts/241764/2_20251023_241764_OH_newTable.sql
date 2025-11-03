@@ -226,32 +226,6 @@ CREATE TABLE [dbo].[LogAction](
 GO
 
 
-DROP TABLE IF EXISTS dbo.[UserLog_RunSP_Detail];
-CREATE TABLE [dbo].[UserLog_RunSP_Detail](
-	[LogId] [int] IDENTITY(1,1) NOT NULL,
-	[LogActionId] [int] NULL,
-	[SPName] [varchar](200) NULL,
-	[UserId] [int] NULL,
-	[AffId] [int] NULL,
-	[LogDate] [datetime] NOT NULL,
-	[OldData] [nvarchar](max) NULL,
-	[NewData] [nvarchar](max) NULL,
-	[IP] [varchar](50) NULL,
-	[Duration] [smallint] NULL,
-	[LogTypeId] [int] NULL,
-	[Language] [varchar](50) NULL,
-	[IsWebCall] [bit] NULL,
- CONSTRAINT [PK_UserLog_RunSP_Detail] PRIMARY KEY NONCLUSTERED 
-(
-	[LogId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [LogData]
-) ON [LogData] TEXTIMAGE_ON [LogData]
-GO
-
-ALTER TABLE [dbo].[UserLog_RunSP_Detail] ADD  CONSTRAINT [DF_UserLog_RunSP_Detail_LogDate]  DEFAULT (getdate()) FOR [LogDate]
-
-
-GO
 DROP TABLE IF EXISTS dbo.[TargetCountry];
 CREATE TABLE [dbo].[TargetCountry](
 	[MarketID] [varchar](50) NOT NULL,

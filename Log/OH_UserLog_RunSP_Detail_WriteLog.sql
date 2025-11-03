@@ -1,13 +1,11 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="1"></info>*/
-CREATE PROCEDURE [dbo].[OH_UserLog_RunSP_Detail_WriteLog]
+ALTER PROCEDURE [dbo].[OH_UserLog_RunSP_Detail_WriteLog]
 	@SPName		VARCHAR(200),
 	@UserId		INT,
-	@AffId		INT,
 	@OldData	NVARCHAR(MAX) = NULL,
 	@NewData	NVARCHAR(MAX) = NULL,
 	@IP			VARCHAR(50) = '',
 	@Language	VARCHAR(20) = '',
-	@IsWebCall	BIT = 0,
 	@Duration SMALLINT = 0
 AS
 
@@ -48,13 +46,11 @@ BEGIN
 		LogActionId,
 		SPName,
 		UserId,
-		AffId,
 		LogDate,
 		OldData,
 		NewData,
 		IP,
 		Language,
-		IsWebCall,
 		Duration
 	)
 	VALUES
@@ -63,13 +59,11 @@ BEGIN
 		@LogActionId,
 		@SPName,
 		@UserId,
-		@AffId,
 		GETDATE(),
 		@OldData,
 		@NewData,
 		@IP,
 		@Language,
-		@IsWebCall,
 		@Duration
 	)
 END

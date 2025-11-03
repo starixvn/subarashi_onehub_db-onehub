@@ -132,7 +132,6 @@ BEGIN
 
 	EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
 		@UserId		= @UserId
-		,@AffId		= 0
 		,@SPName	= @SPName
 		,@OldData	= @OldData
 		,@IP		= @IP
