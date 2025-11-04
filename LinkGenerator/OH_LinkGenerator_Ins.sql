@@ -93,40 +93,126 @@ BEGIN
     -- Validate DomainName exists in Domain table with required conditions
     IF @DomainName IS NOT NULL AND @DomainName <> ''
     BEGIN
-        IF NOT EXISTS (
-            SELECT TOP 1 1 
-            FROM dbo.Domain d WITH (NOLOCK)
-            INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                ON d.DomainName = dd.DomainName
-                AND dd.Score < 30
-                AND dd.CountryCode = @CountryCode
-            WHERE d.DomainName = @DomainName
-              AND d.DomainType = @PageType
-              AND d.Note = ''
-        )
+        -- If PageType = 0 (Landing Page), check if DomainType = 1 also exists with same conditions
+        IF @PageType = 0
         BEGIN
-            SELECT @ErrCode = 1006, @ErrMsg = N'DomainName does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
-            RETURN;
+            IF NOT EXISTS (
+                SELECT TOP 1 1 
+                FROM dbo.Domain d WITH (NOLOCK)
+                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                    ON d.DomainName = dd.DomainName
+                    AND dd.Score < 30
+                    AND dd.CountryCode = @CountryCode
+                    AND dd.DomainType = d.DomainType
+                    AND dd.SiteId = d.SiteId
+                WHERE d.DomainName = @DomainName
+                  AND d.DomainType = @PageType
+                  AND d.SiteId = @SiteId
+                  AND d.Note = ''
+                  -- Check if DomainType = 1 also exists with same conditions
+                  AND EXISTS (
+                      SELECT 1 
+                      FROM dbo.Domain d1 WITH (NOLOCK)
+                      INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
+                          ON d1.DomainName = dd1.DomainName
+                          AND dd1.Score < 30
+                          AND dd1.CountryCode = @CountryCode
+                          AND dd1.DomainType = 1
+                          AND dd1.SiteId = @SiteId
+                      WHERE d1.DomainName = d.DomainName
+                          AND d1.DomainType = 1
+                          AND d1.SiteId = @SiteId
+                          AND d1.Note = ''
+                  )
+            )
+            BEGIN
+                SELECT @ErrCode = 1006, @ErrMsg = N'DomainName does not exist in Domain table with required conditions (DomainType 0 and 1, Note empty, Score < 30, CountryCode)';
+                RETURN;
+            END
+        END
+        ELSE
+        BEGIN
+            IF NOT EXISTS (
+                SELECT TOP 1 1 
+                FROM dbo.Domain d WITH (NOLOCK)
+                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                    ON d.DomainName = dd.DomainName
+                    AND dd.Score < 30
+                    AND dd.CountryCode = @CountryCode
+                    AND dd.DomainType = d.DomainType
+                    AND dd.SiteId = d.SiteId
+                WHERE d.DomainName = @DomainName
+                  AND d.DomainType = @PageType
+                  AND d.SiteId = @SiteId
+                  AND d.Note = ''
+            )
+            BEGIN
+                SELECT @ErrCode = 1006, @ErrMsg = N'DomainName does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
+                RETURN;
+            END
         END
     END
 
     -- Validate ShortLink exists in Domain table with required conditions
     IF @ShortLink IS NOT NULL AND @ShortLink <> ''
     BEGIN
-        IF NOT EXISTS (
-            SELECT TOP 1 1 
-            FROM dbo.Domain d WITH (NOLOCK)
-            INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                ON d.DomainName = dd.DomainName
-                AND dd.Score < 30
-                AND dd.CountryCode = @CountryCode
-            WHERE d.DomainName = @ShortLink
-              AND d.DomainType = @PageType
-              AND d.Note = ''
-        )
+        -- If PageType = 0 (Landing Page), check if DomainType = 1 also exists with same conditions
+        IF @PageType = 0
         BEGIN
-            SELECT @ErrCode = 1007, @ErrMsg = N'ShortLink does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
-            RETURN;
+            IF NOT EXISTS (
+                SELECT TOP 1 1 
+                FROM dbo.Domain d WITH (NOLOCK)
+                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                    ON d.DomainName = dd.DomainName
+                    AND dd.Score < 30
+                    AND dd.CountryCode = @CountryCode
+                    AND dd.DomainType = d.DomainType
+                    AND dd.SiteId = d.SiteId
+                WHERE d.DomainName = @ShortLink
+                  AND d.DomainType = @PageType
+                  AND d.SiteId = @SiteId
+                  AND d.Note = ''
+                  -- Check if DomainType = 1 also exists with same conditions
+                  AND EXISTS (
+                      SELECT 1 
+                      FROM dbo.Domain d1 WITH (NOLOCK)
+                      INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
+                          ON d1.DomainName = dd1.DomainName
+                          AND dd1.Score < 30
+                          AND dd1.CountryCode = @CountryCode
+                          AND dd1.DomainType = 1
+                          AND dd1.SiteId = @SiteId
+                      WHERE d1.DomainName = d.DomainName
+                          AND d1.DomainType = 1
+                          AND d1.SiteId = @SiteId
+                          AND d1.Note = ''
+                  )
+            )
+            BEGIN
+                SELECT @ErrCode = 1007, @ErrMsg = N'ShortLink does not exist in Domain table with required conditions (DomainType 0 and 1, Note empty, Score < 30, CountryCode)';
+                RETURN;
+            END
+        END
+        ELSE
+        BEGIN
+            IF NOT EXISTS (
+                SELECT TOP 1 1 
+                FROM dbo.Domain d WITH (NOLOCK)
+                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                    ON d.DomainName = dd.DomainName
+                    AND dd.Score < 30
+                    AND dd.CountryCode = @CountryCode
+                    AND dd.DomainType = d.DomainType
+                    AND dd.SiteId = d.SiteId
+                WHERE d.DomainName = @ShortLink
+                  AND d.DomainType = @PageType
+                  AND d.SiteId = @SiteId
+                  AND d.Note = ''
+            )
+            BEGIN
+                SELECT @ErrCode = 1007, @ErrMsg = N'ShortLink does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
+                RETURN;
+            END
         END
     END
 
