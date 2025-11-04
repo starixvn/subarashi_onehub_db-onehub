@@ -20,20 +20,61 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- If DomainType = 0, also check if DomainType = 1 exists with same conditions (domain acceptable for both types)
+    IF @DomainType = 0
+    BEGIN
         SELECT 
-                d.DomainName,
-                d.DomainType,
-                d.CreatedDate,
-                d.SiteId,
-                dd.Score
+            d.DomainName,
+            d.DomainType,
+            d.CreatedDate,
+            d.SiteId,
+            dd.Score
         FROM dbo.Domain AS d WITH (NOLOCK)
         INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
             ON d.DomainName = dd.DomainName
             AND dd.Score < 30
             AND dd.CountryCode = @CountryCode
-        WHERE  d.SiteId = @SiteId 
+            AND dd.DomainType = d.DomainType
+            AND dd.SiteId = d.SiteId
+        WHERE d.SiteId = @SiteId 
+            AND d.DomainType = @DomainType
+            AND d.Note = ''
+            -- Check if DomainType = 1 also exists with same conditions
+            AND EXISTS (
+                SELECT 1 
+                FROM dbo.Domain d1 WITH (NOLOCK)
+                INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
+                    ON d1.DomainName = dd1.DomainName
+                    AND dd1.Score < 30
+                    AND dd1.CountryCode = @CountryCode
+                    AND dd1.DomainType = 1
+                    AND dd1.SiteId = @SiteId
+                WHERE d1.DomainName = d.DomainName
+                    AND d1.DomainType = 1
+                    AND d1.SiteId = @SiteId
+                    AND d1.Note = ''
+            )
+        ORDER BY d.Id ASC;
+    END
+    ELSE
+    BEGIN
+        SELECT 
+            d.DomainName,
+            d.DomainType,
+            d.CreatedDate,
+            d.SiteId,
+            dd.Score
+        FROM dbo.Domain AS d WITH (NOLOCK)
+        INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+            ON d.DomainName = dd.DomainName
+            AND dd.Score < 30
+            AND dd.CountryCode = @CountryCode
+            AND dd.DomainType = d.DomainType
+            AND dd.SiteId = d.SiteId
+        WHERE d.SiteId = @SiteId 
             AND d.DomainType = @DomainType
             AND d.Note = ''
         ORDER BY d.Id ASC;
+    END
 END;
 GO

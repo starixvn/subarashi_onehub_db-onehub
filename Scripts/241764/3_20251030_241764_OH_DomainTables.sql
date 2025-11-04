@@ -53,6 +53,8 @@ CREATE TABLE DomainDetail (
     DomainName VARCHAR(200) NOT NULL,
     CountryCode VARCHAR(20) NOT NULL,
     Score SMALLINT NULL,
+    DomainType TINYINT NULL,
+    SiteId SMALLINT NULL,
     CONSTRAINT PK_DomainDetail PRIMARY KEY NONCLUSTERED (Id)
 ) 
 ON [SETTING_DATA]

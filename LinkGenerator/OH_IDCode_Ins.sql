@@ -16,10 +16,16 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE @NewId INT;
+    DECLARE @TimeZone TINYINT;
+
+    -- Get timezone setting
+    SELECT @TimeZone = CONVERT(TINYINT, SValue)
+    FROM dbo.SystemSettings WITH (NOLOCK)
+    WHERE SName = 'TimeZone';
 
     -- Insert with placeholder IDCode
     INSERT INTO dbo.IDCode (IDCode, StatusId, CreatedDate, SiteId)
-    VALUES ('', 1, GETDATE(), @SiteId);
+    VALUES ('', 1, DATEADD(HOUR, @TimeZone, GETUTCDATE()), @SiteId);
 
     -- Get the new identity
     SELECT @NewId = SCOPE_IDENTITY();
