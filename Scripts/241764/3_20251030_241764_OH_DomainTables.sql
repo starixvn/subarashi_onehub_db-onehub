@@ -10,11 +10,16 @@
 
 
 
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
 USE ONEHub;
 GO
 
+
 -- 1. Drop & Create Domain Table
-IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Domain]') AND type IN (N'U'))
+IF EXISTS (SELECT TOP 1 1  FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Domain]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[Domain];
 END
@@ -23,7 +28,8 @@ GO
 CREATE TABLE Domain (
     Id INT IDENTITY(1,1) NOT NULL,
     DomainName VARCHAR(200) NOT NULL,
-    Info NVARCHAR(200) NULL,
+    DomainType TINYINT NULL,
+    Note NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL CONSTRAINT DF_Domain_CreatedDate DEFAULT GETDATE(),
     SiteId SMALLINT NULL,
     CONSTRAINT PK_Domain PRIMARY KEY NONCLUSTERED (Id)
@@ -31,12 +37,12 @@ CREATE TABLE Domain (
 ON [SETTING_DATA]
 WITH (DATA_COMPRESSION = PAGE);
 
--- Create clustered index on DomainName for performance
-CREATE CLUSTERED INDEX IX_Domain_DomainName 
+-- Create UNIQUE clustered index on DomainName for performance & uniqueness
+CREATE UNIQUE CLUSTERED INDEX IX_Domain_DomainName 
 ON Domain (DomainName);
 
 -- 2. Drop & Create DomainDetail Table  
-IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainDetail]') AND type IN (N'U'))
+IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainDetail]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[DomainDetail];
 END
@@ -45,8 +51,7 @@ GO
 CREATE TABLE DomainDetail (
     Id INT IDENTITY(1,1) NOT NULL,
     DomainName VARCHAR(200) NOT NULL,
-    Country VARCHAR(20) NOT NULL,
-    SiteId SMALLINT NULL,
+    CountryCode VARCHAR(20) NOT NULL,
     Score SMALLINT NULL,
     CONSTRAINT PK_DomainDetail PRIMARY KEY NONCLUSTERED (Id)
 ) 
@@ -58,10 +63,10 @@ CREATE CLUSTERED INDEX IX_DomainDetail_DomainName
 ON DomainDetail (DomainName);
 
 CREATE NONCLUSTERED INDEX IX_DomainDetail_Country 
-ON DomainDetail (Country);
+ON DomainDetail (CountryCode);
 
 -- 3. Drop & Create DomainLog Table
-IF EXISTS (SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainLog]') AND type IN (N'U'))
+IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainLog]') AND type IN (N'U'))
 BEGIN
     DROP TABLE [dbo].[DomainLog];
 END
@@ -72,14 +77,13 @@ CREATE TABLE DomainLog (
     DomainName VARCHAR(200) NOT NULL,
     Info NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL CONSTRAINT DF_DomainLog_CreatedDate DEFAULT GETDATE(),
-    SiteId SMALLINT NULL,
-    CONSTRAINT PK_DomainLog PRIMARY KEY CLUSTERED (Id)
+    CONSTRAINT PK_DomainLog PRIMARY KEY NONCLUSTERED (Id)   -- PK changed to NONCLUSTERED
 ) 
 ON [SETTING_DATA]
 WITH (DATA_COMPRESSION = PAGE);
 
--- Create index on DomainName for performance
-CREATE NONCLUSTERED INDEX IX_DomainLog_DomainName 
+-- Create CLUSTERED index on DomainName for DomainLog and remove redundant nonclustered index
+CREATE CLUSTERED INDEX IX_DomainLog_DomainName 
 ON DomainLog (DomainName);
 
 -- Create index on CreatedDate for log queries
@@ -87,4 +91,69 @@ CREATE NONCLUSTERED INDEX IX_DomainLog_CreatedDate
 ON DomainLog (CreatedDate);
 
 GO
- 
+-- 4. Drop & Create LinkGenerator Table
+IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[LinkGenerator]') AND type IN (N'U'))
+BEGIN
+    DROP TABLE [dbo].[LinkGenerator];
+END
+GO
+
+CREATE TABLE LinkGenerator (
+    LinkId INT IDENTITY(1,1) NOT NULL,
+    LinkName VARCHAR(200) NULL,
+    IDCode VARCHAR(20) NULL,
+    CampaignId INT NULL,
+    CountryCode VARCHAR(50) NULL,
+    MarketId VARCHAR(50) NULL,
+    EventId INT NULL,
+    GroupId INT NULL,
+    ChannelId INT NULL,
+    AgencyId INT NULL,
+    TypeId INT NULL,
+    PageId INT NULL,
+    PageType TINYINT NULL,
+    Note NVARCHAR(500) NULL,
+    DomainName VARCHAR(200) NULL,
+    ShortLink VARCHAR(500) NULL,
+    FullLink VARCHAR(1000) NULL,
+    SiteId SMALLINT NULL,
+    StatusId TINYINT NULL,
+    CreatedDate DATETIME NOT NULL CONSTRAINT DF_LinkGenerator_CreatedDate DEFAULT GETDATE(),
+    CONSTRAINT PK_LinkGenerator PRIMARY KEY NONCLUSTERED (LinkId)
+) 
+ON [SETTING_DATA]
+WITH (DATA_COMPRESSION = PAGE);
+
+CREATE CLUSTERED INDEX IX_LinkGenerator_LinkName
+ON LinkGenerator (LinkName);
+
+CREATE NONCLUSTERED INDEX IX_LinkGenerator_IDCode
+ON LinkGenerator (IDCode);
+
+CREATE NONCLUSTERED INDEX IX_LinkGenerator_Site_Status
+ON LinkGenerator (SiteId, StatusId);
+
+GO
+
+-- 5. Drop & Create IDCode Table
+IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[IDCode]') AND type IN (N'U'))
+BEGIN
+    DROP TABLE [dbo].[IDCode];
+END
+GO
+
+CREATE TABLE IDCode (
+    Id INT IDENTITY(100,1) NOT NULL,
+    IDCode VARCHAR(20) NOT NULL,
+    StatusId TINYINT NULL,
+    CreatedDate DATETIME NOT NULL CONSTRAINT DF_IDCode_CreatedDate DEFAULT GETDATE(),
+    SiteId SMALLINT NULL,
+    CONSTRAINT PK_IDCode PRIMARY KEY NONCLUSTERED (Id)
+) 
+ON [SETTING_DATA]
+WITH (DATA_COMPRESSION = PAGE);
+
+CREATE UNIQUE CLUSTERED INDEX IX_IDCode_Code
+ON IDCode (IDCode);
+
+GO

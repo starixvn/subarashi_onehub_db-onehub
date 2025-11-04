@@ -15,16 +15,16 @@ BEGIN
 	
 	; WITH t AS
 	(
-		SELECT PageCode,PageName, 'Mobile' Category, 0 AS IsComponent
+		SELECT PageCode, PageName, 'Mobile' AS Category, 0 AS IsComponent
 		FROM PageBuilder WITH(NOLOCK)
 		UNION ALL
-		SELECT ComponentCode AS PageCode, ComponentName, CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 1 AS IsComponent
+		SELECT ComponentCode AS PageCode, ComponentName AS PageName, CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 1 AS IsComponent
 		FROM Component WITH(NOLOCK)
 		WHERE ComponentTypeId = 6
 	)
-	SELECT PageName, IsComponent, Category
+	SELECT PageCode, PageName, Category, IsComponent
 	FROM t
-	OrDER BY Category ASC , PageName ASC
+	ORDER BY Category ASC, PageName ASC
 END
 GO
 
