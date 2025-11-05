@@ -45,7 +45,6 @@ BEGIN
 		RETURN;
 	END
 
-	DECLARE @Language NVARCHAR(5) = 'en-US';
 	DECLARE @Duration INT;
 	DECLARE @StartTime DATETIME = GETDATE();
 	DECLARE @PageCode VARCHAR(100);
@@ -371,7 +370,6 @@ BEGIN
 		@OldData	= @OldData,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= @Language,
 		@Duration	= @Duration;
 END;
 GO

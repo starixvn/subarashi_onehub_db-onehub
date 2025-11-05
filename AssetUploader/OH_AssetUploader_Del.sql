@@ -135,7 +135,6 @@ BEGIN
 		,@SPName	= @SPName
 		,@OldData	= @OldData
 		,@IP		= @IP
-		,@Language	= 'en-US'
 		,@Duration	= @Duration
 END
 GO

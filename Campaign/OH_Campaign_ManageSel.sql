@@ -6,6 +6,8 @@ ALTER PROCEDURE [dbo].[OH_Campaign_ManageSel]
 	,@PageIndex 	INT = 1
     ,@PageSize 		INT = 20
     ,@NRows 		INT = 0 OUTPUT
+	,@FromDate		DATE = '1900-01-01'
+	,@Todate		DATE = '2050-01-01'
 AS
 
 /*
@@ -41,7 +43,8 @@ BEGIN
 	SET NOCOUNT ON;
 	
 	DECLARE @Status TABLE (StatusId TINYINT);
-	
+	DECLARE @FDate DATETIME = @FromDate
+	DECLARE @TDate DATETIME = DATEADD(MILLISECOND, -3, DATEADD(DAY, 1, CAST(@Todate AS DATETIME)))
 	IF @StatusIds <> '' AND @StatusIds IS NOT NULL
 	BEGIN
 		INSERT INTO @Status(StatusId)
@@ -112,7 +115,8 @@ BEGIN
 		OR (cp.CampaignName LIKE '%' + @Search + '%')
 		OR  ISNULL(@Search, '') = ''
 		OR cp.Description LIKE '%' + @Search + '%'
-	) ;
+	) 
+	AND cp.CreatedDate BETWEEN @Fdate AND @Tdate;
 
 
 	-- Get total row count

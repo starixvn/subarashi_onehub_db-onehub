@@ -133,7 +133,6 @@ BEGIN
 		@OldData	= @OldData,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= 'en-US',
 		@Duration	= @Duration
 END
 GO

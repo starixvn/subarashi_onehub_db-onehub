@@ -182,8 +182,7 @@ CREATE TABLE [dbo].[UserLog_RunSP_Detail](
     [NewData]     NVARCHAR(MAX) NULL,
     [IP]          VARCHAR(50) NULL,
     [Duration]    SMALLINT NULL,
-    [LogTypeId]   INT NULL,
-    [Language]    VARCHAR(50) NULL
+    [LogTypeId]   INT NULL
 )
 ON PS_UserLog_RunSP_LogDate_RL(LogDate);
 GO

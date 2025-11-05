@@ -26,7 +26,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @Language NVARCHAR(5) = 'en-US';
     DECLARE @Duration INT;
     DECLARE @StartTime DATETIME = GETDATE();
     DECLARE @OldData NVARCHAR(MAX);
@@ -105,7 +104,6 @@ BEGIN
         @OldData    = @OldData,
         @NewData    = @NewData,
         @IP         = @IP,
-        @Language   = @Language,
         @Duration   = @Duration;
 
 END;

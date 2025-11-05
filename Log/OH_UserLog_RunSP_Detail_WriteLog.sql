@@ -5,7 +5,6 @@ ALTER PROCEDURE [dbo].[OH_UserLog_RunSP_Detail_WriteLog]
 	@OldData	NVARCHAR(MAX) = NULL,
 	@NewData	NVARCHAR(MAX) = NULL,
 	@IP			VARCHAR(50) = '',
-	@Language	VARCHAR(20) = '',
 	@Duration SMALLINT = 0
 AS
 
@@ -50,7 +49,6 @@ BEGIN
 		OldData,
 		NewData,
 		IP,
-		Language,
 		Duration
 	)
 	VALUES
@@ -63,7 +61,6 @@ BEGIN
 		@OldData,
 		@NewData,
 		@IP,
-		@Language,
 		@Duration
 	)
 END

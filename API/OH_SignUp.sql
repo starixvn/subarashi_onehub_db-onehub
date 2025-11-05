@@ -81,7 +81,6 @@ BEGIN
         @SPName     = @SPName,
         @NewData    = @LogData,
         @IP         = @IP,
-        @Language   = @UserLang,
         @Duration   = @Duration;
 END;
 GO

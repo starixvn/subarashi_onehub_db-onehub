@@ -31,7 +31,7 @@ BEGIN
     -- =========================
     BEGIN TRY
         UPDATE b WITH (ROWLOCK)
-        SET Creator = b.Creator -- Self-update to trigger RowVersion
+        SET b.Creator = b.Creator -- Self-update to trigger RowVersion
         FROM dbo.PageBuilder b
         WHERE b.PageId IN (SELECT value FROM STRING_SPLIT(@PageIds, ','));
 

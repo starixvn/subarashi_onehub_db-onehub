@@ -28,7 +28,6 @@ BEGIN
 		  , @Status 		NVARCHAR(50)
 		  , @NewCampaignId  INT
 		  , @CampaignCode   VARCHAR(100)
-		  , @Language 	 	NVARCHAR(5) = 'en-US'
 		  , @StartTime 	 	DATETIME = GETDATE()
 		  , @EndTime 	 	DATETIME
 		  , @Duration 		INT
@@ -106,7 +105,6 @@ BEGIN
 		,@SPName   = @SPName
 		,@NewData  = @NewData
 		,@IP   	   = @IP
-		,@Language = @Language
 		,@Duration = @Duration;
 
 END

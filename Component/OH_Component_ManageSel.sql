@@ -1,8 +1,13 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Component_ManageSel]
+ALTER PROCEDURE [dbo].[OH_Component_ManageSel]
     @ComponentTypeId INT,
-    @ComponentName VARCHAR(200) = '',
-    @StatusIds VARCHAR(50) = ''
+    @ComponentName	VARCHAR(200) = '',
+	@DeviceIds		VARCHAR(200) = '',
+    @StatusIds		VARCHAR(50) = '',
+	@IsExportExcel BIT = 0,
+	@PageIndex 		INT = 1,
+    @PageSize 		INT = 20,
+    @NRows 			INT = 0 OUTPUT
 AS
 /*
     Created: 20250929@Sophia
@@ -14,6 +19,40 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+	 DROP TABLE IF EXISTS #data;
+    CREATE TABLE #data
+    (
+        ComponentId			INT
+        ,ComponentCode		VARCHAR(200)
+        ,ComponentName 		VARCHAR(200)
+        ,ComponentTypeId   INT
+        ,CreatedDate		DATE
+        ,CreatedBy			VARCHAR(60)
+        ,LastModifiedDate	DATE
+		,LastModifiedBy	    VARCHAR(60)
+        ,StatusId			TINYINT
+        ,Status				VARCHAR(50)
+		,Device				VARCHAR(100)
+		,DeviceId			INT
+		,RowIdx				INT
+    );
+
+	INSERT INTO #data (
+		 ComponentId			
+        ,ComponentCode		
+        ,ComponentName 		
+        ,ComponentTypeId   
+        ,CreatedDate	
+        ,CreatedBy		
+        ,LastModifiedDate	
+		,LastModifiedBy
+        ,StatusId		
+        ,Status			
+		,Device	
+		,DeviceId
+		,RowIdx			
+
+	)
     SELECT 
         c.ComponentId,
         c.ComponentCode,
@@ -25,7 +64,9 @@ BEGIN
         au.UserName AS LastModifiedBy,
         c.StatusId,
         s.Status,
-		CASE WHEN c.CategoryType = 1 THEN 'Mobile' WHEN c.CategoryType =2 THEN 'Mobile & Desktop' ELSE NULL END Device
+		CASE WHEN c.CategoryType = 1 THEN 'Mobile' WHEN c.CategoryType =2 THEN 'Mobile & Desktop' ELSE NULL END Device,
+		c.CategoryType DeviceId,
+		 ROW_NUMBER() OVER(ORDER BY c.ComponentId DESC) AS RowIdx
     FROM dbo.Component c WITH (NOLOCK)
     LEFT JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = c.Creator
     LEFT JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = c.UpdatedBy
@@ -35,5 +76,42 @@ BEGIN
             OR c.ComponentName LIKE '%' + @ComponentName + '%'
             OR c.ComponentCode LIKE '%' + @ComponentName + '%')
         AND (@StatusIds = '' OR ',' + @StatusIds + ',' LIKE '%,' + CONVERT(VARCHAR(10), c.StatusId) + ',%')
-    ORDER BY c.ComponentId DESC;
+		 AND  ( 
+			c.ComponentTypeId = 6 AND (@DeviceIds = '' OR ',' + @DeviceIds + ',' LIKE '%,' + CONVERT(VARCHAR(10), c.CategoryType) + ',%')
+			OR c.ComponentTypeId <> 6 AND @DeviceIds = ''
+		 )
+	-- Get total row count
+    SELECT @NRows = COUNT(*) FROM #data;
+	
+	
+	-- Paging logic
+    DECLARE @RowStart INT, @RowEnd INT;
+	IF @IsExportExcel = 0
+    BEGIN
+        SELECT @RowStart = (@PageIndex - 1) * @PageSize + 1,
+               @RowEnd = @RowStart + @PageSize - 1;
+    END
+    ELSE
+    BEGIN
+        SELECT @RowStart = 1,
+               @RowEnd = @NRows;
+    END
+
+	SELECT  ComponentId			
+        ,ComponentCode		
+        ,ComponentName 		
+        ,ComponentTypeId   
+        ,CreatedDate	
+        ,CreatedBy		
+        ,LastModifiedDate	
+		,LastModifiedBy
+        ,StatusId		
+        ,Status			
+		,Device
+		,DeviceId	
+		,RowIdx			
+	FROM #data
+    WHERE RowIdx BETWEEN @RowStart AND @RowEnd
+    ORDER BY RowIdx ASC;
+
 END;

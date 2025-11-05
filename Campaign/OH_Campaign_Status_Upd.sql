@@ -23,7 +23,6 @@ BEGIN
 	
 	DECLARE @CurrentDate 	DATETIME
 		  , @Status 		NVARCHAR(50)
-		  , @Language 	 	NVARCHAR(5) = 'en-US'
 		  , @StartTime 	 	DATETIME = GETDATE()
 		  , @EndTime 	 	DATETIME
 		  , @Duration 		INT
@@ -106,7 +105,6 @@ BEGIN
 			,@OldData  = @OldData
 			,@NewData  = @NewData
 			,@IP   	   = @IP
-			,@Language = @Language
 			,@Duration = @Duration;
 
 		DELETE FROM #tmp_CampaignId WHERE CampaignId = @CampaignId

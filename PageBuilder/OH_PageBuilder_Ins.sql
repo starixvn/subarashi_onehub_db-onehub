@@ -64,7 +64,6 @@ BEGIN
 		RETURN;
 	END
 
-	DECLARE @Language NVARCHAR(5) = 'en-US';
 	DECLARE @Duration INT;
 	DECLARE @StartTime DATETIME = GETDATE();
 	DECLARE @NewData NVARCHAR(MAX);
@@ -312,7 +311,6 @@ BEGIN
 		@SPName		= @SPName,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= @Language,
 		@Duration	= @Duration;
 
 

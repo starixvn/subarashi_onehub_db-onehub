@@ -259,7 +259,6 @@ BEGIN
 		@OldData	= @OldData,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= 'en-US',
 		@Duration	= @Duration
 	
 	-- Update RowVersion of LandingPage_Builder

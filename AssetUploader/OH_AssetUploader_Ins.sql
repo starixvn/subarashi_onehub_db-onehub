@@ -334,7 +334,6 @@ BEGIN
 		@SPName		= @SPName,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= 'en-US',
 		@Duration	= @Duration
 END
 GO
