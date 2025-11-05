@@ -74,7 +74,7 @@ BEGIN
 	BEGIN TRY
 
 		DELETE cp
-		FROM dbo.Campaign cp
+		FROM dbo.Campaign cp WITH(ROWLOCK)
 		WHERE EXISTS (SELECT TOP 1 1 FROM #tmp_CampaignId tc WHERE tc.CampaignId = cp.CampaignId)
 
 	END TRY
