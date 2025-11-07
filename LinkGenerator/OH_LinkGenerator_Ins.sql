@@ -84,7 +84,7 @@ BEGIN
     END
 
     -- Check for duplicate LinkName
-    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE LinkName = @LinkName)
+    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE LinkName = @LinkName AND StatusID = 1)
     BEGIN
         SELECT @ErrCode = 1005, @ErrMsg = N'LinkName already exists';
         RETURN;
@@ -343,27 +343,27 @@ BEGIN
     -- Compose @NewData JSON
     SELECT @NewData = ISNULL((
         SELECT 
-            ISNULL(@LinkId, 0) AS 'linkId',
-            ISNULL(@LinkName, '') AS 'linkName',
-            ISNULL(@IDCode, '') AS 'idCode',
-            ISNULL(@CampaignName, '') AS 'campaign',
-            ISNULL(@CountryName, '') AS 'country',
-            ISNULL(@MarketName, '') AS 'market',
-            ISNULL(@EventId, 0) AS 'eventId',
-            ISNULL(@GroupId, 0) AS 'groupId',
-            ISNULL(@ChannelId, 0) AS 'channelId',
-            ISNULL(@AgencyId, 0) AS 'agencyId',
-            ISNULL(@TypeId, 0) AS 'typeId',
-            ISNULL(@TypeName, '') AS 'typeName',
-            ISNULL(@PageId, 0) AS 'pageId',
-            ISNULL(@PageName, '') AS 'pageName',
-            ISNULL(@PageType, 0) AS 'pageType',
-            ISNULL(@Note, '') AS 'note',
-            ISNULL(@DomainName, '') AS 'domainName',
-            ISNULL(@ShortLink, '') AS 'shortLink',
-            ISNULL(@FullLink, '') AS 'fullLink',
-            ISNULL(@SiteId, 0) AS 'siteId',
-            ISNULL(@StatusId, 0) AS 'statusId'
+            ISNULL(@LinkId, 0) AS 'LinkId',
+            ISNULL(@LinkName, '') AS 'LinkName',
+            ISNULL(@IDCode, '') AS 'IDCode',
+            ISNULL(@CampaignName, '') AS 'Campaign',
+            ISNULL(@CountryName, '') AS 'Country',
+            ISNULL(@MarketName, '') AS 'Market',
+            ISNULL(@EventId, 0) AS 'EventId',
+            ISNULL(@GroupId, 0) AS 'GroupId',
+            ISNULL(@ChannelId, 0) AS 'ChannelId',
+            ISNULL(@AgencyId, 0) AS 'AgencyId',
+            ISNULL(@TypeId, 0) AS 'TypeId',
+            ISNULL(@TypeName, '') AS 'TypeName',
+            ISNULL(@PageId, 0) AS 'PageId',
+            ISNULL(@PageName, '') AS 'PageName',
+            ISNULL(@PageType, 0) AS 'PageType',
+            ISNULL(@Note, '') AS 'Note',
+            ISNULL(@DomainName, '') AS 'DomainName',
+            ISNULL(@ShortLink, '') AS 'ShortLink',
+            ISNULL(@FullLink, '') AS 'FullLink',
+            ISNULL(@SiteId, 0) AS 'SiteId',
+            ISNULL(@StatusId, 0) AS 'StatusId'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     ), '{}');
 

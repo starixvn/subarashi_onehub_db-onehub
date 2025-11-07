@@ -1,6 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_LandingPage_Sel]
-
+ALTER PROCEDURE [dbo].[OH_LandingPage_Sel]
 AS
 /*
 	Created: 20251031@Danny
@@ -15,12 +14,28 @@ BEGIN
 	
 	; WITH t AS
 	(
-		SELECT PageCode,PageName, 'Mobile' Category, 0 AS IsComponent
-		FROM PageBuilder WITH(NOLOCK)
+		SELECT  PageCode, 
+				PageName, 
+				'Mobile' Category, 
+				1 as CategoryId,
+				0 AS IsComponent,
+				TargetCountryCode,
+				MarketId,
+				CampaignId
+		FROM 	PageBuilder WITH(NOLOCK)
+		WHERE 	StatusId = 1 
 		UNION ALL
-		SELECT ComponentCode AS PageCode, ComponentName AS PageName, CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 1 AS IsComponent
-		FROM Component WITH(NOLOCK)
-		WHERE ComponentTypeId = 6
+		SELECT 	ComponentCode AS PageCode, 
+				ComponentName AS PageName, 
+				CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 
+				CASE WHEN CategoryType = 1 THEN 1 ELSE 2 END CategoryId, 
+				1 AS IsComponent,
+				'' AS TargetCountryCode,
+				'' AS MarketId,
+				'' AS CampaignId
+		FROM 	Component WITH(NOLOCK)
+		WHERE 	ComponentTypeId = 6
+				AND StatusId = 1
 	)
 	SELECT PageCode, PageName, Category, IsComponent
 	FROM t
