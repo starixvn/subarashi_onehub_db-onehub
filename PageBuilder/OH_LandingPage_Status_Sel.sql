@@ -6,8 +6,7 @@ AS
 	DB: DBOH-ONEHub
 	Task: Select Landing Page Status List
 	Revisions:
-		- 20250826@Sophia: Initial version [RedmineID: #236797]
-		- 20250826@Copilot: Refactored to use fn_LandingPage_Status
+		- 20250826@Sophia: Initial version [RedmineID: #236797] 
 */
 BEGIN
 	SET NOCOUNT ON;

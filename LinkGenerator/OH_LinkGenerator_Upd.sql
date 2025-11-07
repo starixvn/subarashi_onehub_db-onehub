@@ -13,7 +13,7 @@ AS
     Task: Update LinkGenerator Status - Link generator status update
 
     Revisions:
-        - 20251107@Sophia: Initialize SP [RedmineID: #TBD] 
+        - 20251107@Sophia: Initialize SP [RedmineID: #241764] 
 */
 BEGIN
     SET NOCOUNT ON;
