@@ -1,6 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Domain_Ins]
-    @Data VARCHAR(MAX),
+ALTER PROCEDURE [dbo].[OH_Domain_Ins]
+    @Data NVARCHAR(MAX),
     @DomainType TINYINT,
     @SiteId SMALLINT = 101,
     @ErrCode INT = 0 OUTPUT,
@@ -13,41 +13,70 @@ AS
 
     Revisions:
         - 20251104@Sophia: Initialize SP [RedmineID: #236797]
+        - 20251110@Sophia: Changed from XML to JSON format [RedmineID: #241764]
 
-    Example XML Input:
-    <Dms>
-        <Dm>
-            <DmName>example.com</DmName>
-            <Note>Test domain</Note>
-            <Dts>
-                <Dt>
-                    <Country>VN</Country>
-                    <Score>25</Score>
-                </Dt>
-                <Dt>
-                    <Country>TH</Country>
-                    <Score>28</Score>
-                </Dt>
-            </Dts>
-        </Dm>
-        <Dm>
-            <DmName>example2.com</DmName>
-            <Note></Note>
-            <Dts>
-                <Dt>
-                    <Country>VN</Country>
-                    <Score>20</Score>
-                </Dt>
-            </Dts>
-        </Dm>
-    </Dms>
+    Example JSON Input (using short codes):
+    [
+        {
+            "DmN": "example.com",
+            "Nt": "Test domain",
+            "Dts": [
+                {
+                    "CC": "VN",
+                    "Sc": 25
+                },
+                {
+                    "CC": "TH",
+                    "Sc": 28
+                }
+            ]
+        },
+        {
+            "DmN": "example2.com",
+            "Nt": "",
+            "Dts": [
+                {
+                    "CC": "VN",
+                    "Sc": 20
+                }
+            ]
+        }
+    ]
+
+    Short codes mapping:
+        DmN = DomainName
+        Nt = Note
+        Dts = Details
+        CC = CountryCode
+        Sc = Score
+
+    Sample EXEC:
+        DECLARE @ErrCode INT, @ErrMsg NVARCHAR(MAX)
+        DECLARE @JsonData NVARCHAR(MAX) = N'[
+            {
+                "DmN": "testdomain.com",
+                "Nt": "Test domain for campaign",
+                "Dts": [
+                    {"CC": "VN", "Sc": 15},
+                    {"CC": "TH", "Sc": 20}
+                ]
+            }
+        ]'
+        
+        EXEC dbo.OH_Domain_Ins
+            @Data = @JsonData,
+            @DomainType = 0,
+            @SiteId = 101,
+            @ErrCode = @ErrCode OUTPUT,
+            @ErrMsg = @ErrMsg OUTPUT
+        
+        SELECT @ErrCode AS ErrorCode, @ErrMsg AS ErrorMessage
 
     Note: @DomainType and @SiteId parameters are applied to all domains in the batch
 */
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @XmlData XML;
     DECLARE @TimeZone TINYINT;
 
     -- Initialize error handling
@@ -65,14 +94,12 @@ BEGIN
         RETURN;
     END
 
-    -- Parse XML
-    BEGIN TRY
-        SET @XmlData = CAST(@Data AS XML);
-    END TRY
-    BEGIN CATCH
-        SELECT @ErrCode = 1002, @ErrMsg = N'Invalid XML format: ' + ERROR_MESSAGE();
+    -- Validate JSON format
+    IF ISJSON(@Data) = 0
+    BEGIN
+        SELECT @ErrCode = 1002, @ErrMsg = N'Invalid JSON format';
         RETURN;
-    END CATCH
+    END
 
     -- Create temp tables for processing
     CREATE TABLE #TempDomain (
@@ -86,26 +113,26 @@ BEGIN
         Score SMALLINT
     );
 
-    -- Parse XML into temp tables
+    -- Parse JSON into temp tables (using short codes)
     BEGIN TRY
         -- Parse Domain data
         INSERT INTO #TempDomain (DomainName, Note)
         SELECT 
-            T.c.value('(DmName)[1]', 'VARCHAR(200)') AS DomainName,
-            T.c.value('(Note)[1]', 'NVARCHAR(200)') AS Note
-        FROM @XmlData.nodes('/Dms/Dm') AS T(c);
+            JSON_VALUE(value, '$.DmN') AS DomainName,
+            JSON_VALUE(value, '$.Nt') AS Note
+        FROM OPENJSON(@Data);
 
         -- Parse DomainDetail data
         INSERT INTO #TempDomainDetail (DomainName, CountryCode, Score)
         SELECT 
-            T.c.value('(./DmName)[1]', 'VARCHAR(200)') AS DomainName,
-            D.d.value('(Country)[1]', 'VARCHAR(20)') AS CountryCode,
-            D.d.value('(Score)[1]', 'SMALLINT') AS Score
-        FROM @XmlData.nodes('/Dms/Dm') AS T(c)
-        CROSS APPLY T.c.nodes('Dts/Dt') AS D(d);
+            JSON_VALUE(domain.value, '$.DmN') AS DomainName,
+            JSON_VALUE(detail.value, '$.CC') AS CountryCode,
+            JSON_VALUE(detail.value, '$.Sc') AS Score
+        FROM OPENJSON(@Data) AS domain
+        CROSS APPLY OPENJSON(domain.value, '$.Dts') AS detail;
     END TRY
     BEGIN CATCH
-        SELECT @ErrCode = 1003, @ErrMsg = N'Error parsing XML data: ' + ERROR_MESSAGE();
+        SELECT @ErrCode = 1003, @ErrMsg = N'Error parsing JSON data: ' + ERROR_MESSAGE();
         DROP TABLE #TempDomain;
         DROP TABLE #TempDomainDetail;
         RETURN;
@@ -114,7 +141,7 @@ BEGIN
     -- Validate data
     IF NOT EXISTS (SELECT TOP 1 1 FROM #TempDomain)
     BEGIN
-        SELECT @ErrCode = 1004, @ErrMsg = N'No domain data found in XML';
+        SELECT @ErrCode = 1004, @ErrMsg = N'No domain data found in JSON';
         DROP TABLE #TempDomain;
         DROP TABLE #TempDomainDetail;
         RETURN;

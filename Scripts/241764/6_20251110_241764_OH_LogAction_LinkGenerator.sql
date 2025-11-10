@@ -106,5 +106,5 @@ SELECT
     Items
 FROM dbo.LogAction WITH (NOLOCK)
 WHERE SPName IN ('OH_LinkGenerator_Ins', 'OH_LinkGenerator_Upd')
-ORDER BY SPName;
+ 
 GO
