@@ -168,11 +168,11 @@ TO (
 /* ============================================================
    4) clustered index align theo LogDate
    ============================================================ */
-IF OBJECT_ID('dbo.ClickStatistic','U') IS NOT NULL
-    DROP TABLE dbo.ClickStatistic;
+IF OBJECT_ID('dbo.ClickStatistics','U') IS NOT NULL
+    DROP TABLE dbo.ClickStatistics;
 GO
 
-CREATE TABLE [dbo].[ClickStatistic](
+CREATE TABLE [dbo].[ClickStatistics](
     [ClickId]  [bigint] NOT NULL,
 	[IdCode]   [varchar](20) NOT NULL,
 	[UpdatedTime] [datetime] NOT NULL,
@@ -183,7 +183,6 @@ CREATE TABLE [dbo].[ClickStatistic](
 	[RedirectURL] [nvarchar](256) NULL,
 	[Browser] [nvarchar](50) NOT NULL,
 	[BrowserVersion] [nvarchar](16) NULL,
-	[BrowserResolution] [nvarchar](16) NULL,
 	[BrowserLanguage] [nvarchar](8) NULL,
 	[OS] [nvarchar](50) NULL,
 	[Device] [nvarchar](50) NULL,
@@ -192,7 +191,8 @@ CREATE TABLE [dbo].[ClickStatistic](
 	[LinkId] [varchar](500) NULL,
 	[FullLink] [varchar](1000) NULL,
 	[ShortLink]	[varchar](500) NULL,
-	[IsExcluded] [bit] NOT NULL
+	[SiteId]	[smallint] NULL,
+	[ClickTypeId] [tinyint] NOT NULL
 )
 ON PS_ClickStatistic_RL(UpdatedTime);
 GO
