@@ -98,7 +98,7 @@ BEGIN
         -- Parse DomainDetail data
         INSERT INTO #TempDomainDetail (DomainName, CountryCode, Score)
         SELECT 
-            T.c.value('(../../DmName)[1]', 'VARCHAR(200)') AS DomainName,
+            T.c.value('(./DmName)[1]', 'VARCHAR(200)') AS DomainName,
             D.d.value('(Country)[1]', 'VARCHAR(20)') AS CountryCode,
             D.d.value('(Score)[1]', 'SMALLINT') AS Score
         FROM @XmlData.nodes('/Dms/Dm') AS T(c)

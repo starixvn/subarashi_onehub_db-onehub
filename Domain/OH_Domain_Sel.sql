@@ -1,8 +1,8 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_Domain_Sel]
-    @CountryCode VARCHAR(20),
-    @SiteId SMALLINT = 101,
-    @DomainType TINYINT = 0
+    @CountryCode VARCHAR(20),   
+    @DomainType TINYINT = 0,
+    @SiteId SMALLINT = 101
 AS
 /*
     Created: 20251103@Sophia
@@ -12,10 +12,12 @@ AS
     Revisions:
         - 20251103@Sophia: Initialize SP [RedmineID: #236797]
 
-    DomainType mapping:
-        0: Domain Landing Page (IsComponent = 0)
-        1: Domain Others (from Component, IsComponent = 1)
+    Note:
+    @DomainType:
+        0: Domain of Landing Page (when input param @PageType = 3 - from landing page only)
+        1: Domain Others (when input param @PageType = 1 or 2 - from Component)
         2: Short Link
+          
 */
 BEGIN
     SET NOCOUNT ON;

@@ -22,6 +22,35 @@ AS
         0: Domain Landing Page (IsComponent = 0)
         1: Domain Others (from Component, IsComponent = 1)
         2: Short Link
+
+    Sample EXEC:
+        -- Example 1: Update Domain Landing Page (DomainType = 0)
+        DECLARE @ErrCode INT, @ErrMsg NVARCHAR(MAX)
+        EXEC dbo.OH_Domain_Upd
+            @DomainName = 'example.com',
+            @Note = 'Reserved for Campaign ABC',
+            @DomainType = 0,
+            @SiteId = 101,
+            @UserId = 12345,
+            @IP = '192.168.1.100',
+            @ErrCode = @ErrCode OUTPUT,
+            @ErrMsg = @ErrMsg OUTPUT
+        SELECT @ErrCode AS ErrorCode, @ErrMsg AS ErrorMessage
+
+        -- Example 2: Update Domain Others from Component (DomainType = 1)
+        DECLARE @ErrCode INT, @ErrMsg NVARCHAR(MAX)
+        EXEC dbo.OH_Domain_Upd
+            @DomainName = 'component-domain.com',
+            @Note = 'Reserved for Mobile Component',
+            @DomainType = 1,
+            @SiteId = 101,
+            @UserId = 12345,
+            @IP = '192.168.1.100',
+            @ErrCode = @ErrCode OUTPUT,
+            @ErrMsg = @ErrMsg OUTPUT
+        SELECT @ErrCode AS ErrorCode, @ErrMsg AS ErrorMessage
+
+       
 */
 BEGIN
     SET NOCOUNT ON;
@@ -99,7 +128,6 @@ BEGIN
     
     EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
         @UserId     = @UserId,
-        @AffId      = 0,
         @SPName     = @SPName,
         @OldData    = @OldData,
         @NewData    = @NewData,

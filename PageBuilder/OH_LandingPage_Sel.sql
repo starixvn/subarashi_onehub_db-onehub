@@ -6,6 +6,11 @@ AS
 	DB: DBOH-ONEHub
 	Task: Select Landing Page - Link generator
 
+	Note: PageType values:
+		1: Mobile & Desktop from Component
+		2: Mobile from Component
+		3: Mobile from LandingPage
+
 	Revisions:  
 		- 20251031@Danny: Initialize SP [RedmineID: #241764]
 */
@@ -16,9 +21,8 @@ BEGIN
 	(
 		SELECT  PageCode, 
 				PageName, 
-				'Mobile' Category, 
-				1 as CategoryId,
-				0 AS IsComponent,
+				'Mobile' Category, 				
+				3 AS LandingPageType,
 				TargetCountryCode,
 				MarketId,
 				CampaignId
@@ -28,8 +32,7 @@ BEGIN
 		SELECT 	ComponentCode AS PageCode, 
 				ComponentName AS PageName, 
 				CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 
-				CASE WHEN CategoryType = 1 THEN 1 ELSE 2 END CategoryId, 
-				1 AS IsComponent,
+				CASE WHEN CategoryType = 1 THEN 2 ELSE 1 END AS LandingPageType,
 				'' AS TargetCountryCode,
 				'' AS MarketId,
 				'' AS CampaignId
@@ -37,7 +40,7 @@ BEGIN
 		WHERE 	ComponentTypeId = 6
 				AND StatusId = 1
 	)
-	SELECT PageCode, PageName, Category, IsComponent
+	SELECT PageCode, PageName, Category, LandingPageType, TargetCountryCode, MarketId, CampaignId
 	FROM t
 	ORDER BY Category ASC, PageName ASC
 END

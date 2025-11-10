@@ -12,6 +12,18 @@ AS
     DB: DBOH-ONEHub
     Task: Update LinkGenerator Status - Link generator status update
 
+    Sample EXEC:
+        -- Example 1: Update Status to Active (1)
+        DECLARE @ErrCode INT, @ErrMsg NVARCHAR(MAX)
+        EXEC dbo.OH_LinkGenerator_Upd
+            @LinkId = 1,
+            @StatusId = 0,  -- 1: Active, 0: Inactive
+            @UserId = 12345,
+            @IP = '192.168.1.100',
+            @ErrCode = @ErrCode OUTPUT,
+            @ErrMsg = @ErrMsg OUTPUT
+        SELECT @ErrCode AS ErrorCode, @ErrMsg AS ErrorMessage
+ 
     Revisions:
         - 20251107@Sophia: Initialize SP [RedmineID: #241764] 
 */
@@ -55,38 +67,29 @@ BEGIN
     -- Capture old data before update
     SELECT @OldData = ISNULL((
         SELECT 
-            lg.LinkId AS 'LinkId',
-            lg.LinkName AS 'LinkName',
-            lg.IDCode AS 'IDCode',
-            c.CampaignName AS 'Campaign',
-            tc.CountryName AS 'Country',
-            m.MarketName AS 'Market',
-            lg.EventId AS 'EventId',
-            lg.GroupId AS 'GroupId',
-            lg.ChannelId AS 'ChannelId',
-            lg.AgencyId AS 'AgencyId',
-            lg.TypeId AS 'TypeId',
-            CASE lg.TypeId
-                WHEN 0 THEN 'Landing Page'
-                WHEN 1 THEN 'Domain Others'
-                WHEN 2 THEN 'ShortLink'
-                ELSE 'Unknown'
-            END AS 'TypeName',
-            lg.PageId AS 'PageId',
-            pb.PageName AS 'PageName',
-            lg.PageType AS 'PageType',
-            ISNULL(lg.Note, '') AS 'Note',
-            lg.DomainName AS 'DomainName',
-            ISNULL(lg.ShortLink, '') AS 'ShortLink',
-            ISNULL(lg.FullLink, '') AS 'FullLink',
-            lg.SiteId AS 'SiteId',
-            lg.StatusId AS 'StatusId',
-            lg.ModifiedDate AS 'ModifiedDate'
+            lg.LinkId AS 'lid',
+            lg.LinkName AS 'ln',
+            lg.IDCode AS 'idc',
+            c.CampaignName AS 'cn',
+            tc.CountryName AS 'cty',
+            m.MarketName AS 'mkt',
+            lg.EventIds AS 'eids',
+            lg.GroupId AS 'gid',
+            lg.ChannelId AS 'chid',
+            lg.AgencyId AS 'aid',
+            lg.TypeId AS 'tid',
+            lg.PageCode AS 'pc',
+            lg.PageType AS 'pt',
+            ISNULL(lg.Note, '') AS 'nt',
+            lg.DomainName AS 'dn',
+            ISNULL(lg.ShortLink, '') AS 'sl',
+            ISNULL(lg.FullLink, '') AS 'fl',
+            lg.SiteId AS 'sid',
+            lg.StatusId AS 'st'
         FROM dbo.LinkGenerator lg WITH (NOLOCK)
         LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON lg.CountryCode = tc.CountryCode
         LEFT JOIN dbo.Market m WITH (NOLOCK) ON lg.MarketId = m.MarketId
         LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON lg.CampaignId = c.CampaignId
-        LEFT JOIN dbo.PageBuilder pb WITH (NOLOCK) ON lg.PageId = pb.PageId
         WHERE lg.LinkId = @LinkId
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     ), '{}');
@@ -95,8 +98,8 @@ BEGIN
     UPDATE dbo.LinkGenerator WITH (ROWLOCK)
     SET 
         StatusId = @StatusId,
-        ModifiedDate = DATEADD(HOUR, @TimeZone, GETUTCDATE()),
-        ModifiedBy = @UserId
+        UpdatedDate = DATEADD(HOUR, @TimeZone, GETUTCDATE()),
+        UpdatedBy = @UserId
     WHERE LinkId = @LinkId;
 
     -- Check if update was successful
@@ -109,38 +112,29 @@ BEGIN
     -- Capture new data after update
     SELECT @NewData = ISNULL((
         SELECT 
-            lg.LinkId AS 'LinkId',
-            lg.LinkName AS 'LinkName',
-            lg.IDCode AS 'IDCode',
-            c.CampaignName AS 'Campaign',
-            tc.CountryName AS 'Country',
-            m.MarketName AS 'Market',
-            lg.EventId AS 'EventId',
-            lg.GroupId AS 'GroupId',
-            lg.ChannelId AS 'ChannelId',
-            lg.AgencyId AS 'AgencyId',
-            lg.TypeId AS 'TypeId',
-            CASE lg.TypeId
-                WHEN 0 THEN 'Landing Page'
-                WHEN 1 THEN 'Domain Others'
-                WHEN 2 THEN 'ShortLink'
-                ELSE 'Unknown'
-            END AS 'TypeName',
-            lg.PageId AS 'PageId',
-            pb.PageName AS 'PageName',
-            lg.PageType AS 'PageType',
-            ISNULL(lg.Note, '') AS 'Note',
-            lg.DomainName AS 'DomainName',
-            ISNULL(lg.ShortLink, '') AS 'ShortLink',
-            ISNULL(lg.FullLink, '') AS 'FullLink',
-            lg.SiteId AS 'SiteId',
-            lg.StatusId AS 'StatusId',
-            lg.ModifiedDate AS 'ModifiedDate'
+            lg.LinkId AS 'lid',
+            lg.LinkName AS 'ln',
+            lg.IDCode AS 'idc',
+            c.CampaignName AS 'cn',
+            tc.CountryName AS 'cty',
+            m.MarketName AS 'mkt',
+            lg.EventIds AS 'eids',
+            lg.GroupId AS 'gid',
+            lg.ChannelId AS 'chid',
+            lg.AgencyId AS 'aid',
+            lg.TypeId AS 'tid',
+            lg.PageCode AS 'pc',
+            lg.PageType AS 'pt',
+            ISNULL(lg.Note, '') AS 'nt',
+            lg.DomainName AS 'dn',
+            ISNULL(lg.ShortLink, '') AS 'sl',
+            ISNULL(lg.FullLink, '') AS 'fl',
+            lg.SiteId AS 'sid',
+            lg.StatusId AS 'st'
         FROM dbo.LinkGenerator lg WITH (NOLOCK)
         LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON lg.CountryCode = tc.CountryCode
         LEFT JOIN dbo.Market m WITH (NOLOCK) ON lg.MarketId = m.MarketId
         LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON lg.CampaignId = c.CampaignId
-        LEFT JOIN dbo.PageBuilder pb WITH (NOLOCK) ON lg.PageId = pb.PageId
         WHERE lg.LinkId = @LinkId
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     ), '{}');

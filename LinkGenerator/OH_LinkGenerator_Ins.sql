@@ -1,20 +1,22 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_LinkGenerator_Ins]
     @LinkName VARCHAR(200),
-    @IDCode VARCHAR(20),
+    @IDCode VARCHAR(20) OUTPUT,
     @CampaignId INT,
     @CountryCode VARCHAR(50),
     @MarketId VARCHAR(50),
-    @EventId INT,
+    @EventIds VARCHAR(1000),
     @GroupId INT,
     @ChannelId INT,
     @AgencyId INT,
     @TypeId INT,
-    @PageId INT,
+    @PageCode VARCHAR(100),
     @PageType TINYINT,
     @DomainName VARCHAR(200),
-    @Note NVARCHAR(200),
+    @DomainNote NVARCHAR(200),
+    @Note NVARCHAR(500),
     @ShortLink VARCHAR(500),
+    @ShortPath VARCHAR(50),
     @FullLink VARCHAR(1000),
     @SiteId SMALLINT = 101,
     @StatusId TINYINT = 1,
@@ -28,6 +30,50 @@ AS
     Created: 20251103@Sophia
     DB: DBOH-ONEHub
     Task: Insert LinkGenerator - Link generator
+
+    Note: 
+        @PageType :
+            1: Mobile & Desktop from Component
+            2: Mobile from Component
+            3: Mobile from LandingPage
+
+        (DomainType:
+            0: Domain of Landing Page (when input param @PageType = 3 - from landing page only)
+            1: Domain of Others (when input param @PageType = 1 or 2 - from Component)
+            2: Short Link)
+
+    Sample EXEC:
+        DECLARE @LinkId INT, @ErrCode INT, @ErrMsg NVARCHAR(MAX), @IDCode VARCHAR(50) 
+		Select @IDCode  = ''
+
+        EXEC dbo.OH_LinkGenerator_Ins
+            @LinkName = 'Promo Campaign Link',
+            @IDCode =  @IDCode  OUTPUT ,  -- Will auto-generate if empty
+            @CampaignId = 100,
+            @CountryCode = 'VN',
+            @MarketId = 'en-US',
+            @EventIds = '5001,5002',
+            @GroupId = 200,
+            @ChannelId = 10,
+            @AgencyId = 50,
+            @TypeId = 0,  -- Landing Page
+            @PageCode = 'vn-sport-17'  ,
+            @PageType = 3,  -- Mobile from LandingPage
+            @DomainName = '12gogofun.com',
+            @DomainNote = 'Reserved for Q4 Campaign',
+            @Note = 'Link Generator Note',
+            @ShortLink = '002AC.nufrel.com',
+            @ShortPath = 'ABC',
+            @FullLink = 'https://12gogofun.com/campaign?@CampaignId=100',
+            @SiteId = 101,
+            @StatusId = 1,
+            @UserId = 12345,
+            @IP = '192.168.1.100',
+            @LinkId = @LinkId OUTPUT,
+            @ErrCode = @ErrCode OUTPUT,
+            @ErrMsg = @ErrMsg OUTPUT
+			
+        SELECT @LinkId AS LinkId, @ErrCode AS ErrorCode, @ErrMsg AS ErrorMessage, @IDCode as ID
 
     Revisions:
         - 20251103@Sophia: Initialize SP [RedmineID: #236797] 
@@ -66,8 +112,108 @@ BEGIN
         SELECT @ErrCode = 1003, @ErrMsg = N'DomainName is required';
         RETURN;
     END
+   
 
-    -- Handle IDCode generation or validation
+    -- Check for duplicate DomainName
+    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE DomainName = @DomainName AND StatusID = 1)
+    BEGIN
+        SELECT @ErrCode = 1005, @ErrMsg = N'This Domain Name already has an active link. You can not generate a new one until the existing link is inactive.';
+        RETURN;
+    END
+    
+    -- Check for duplicate ShortPath
+    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE ShortPath = @ShortPath)
+    BEGIN
+        SELECT @ErrCode = 1006, @ErrMsg = N'Short path must be unique across all short link domains';
+        RETURN;
+    END
+
+    -- Check DomainName in Domain table with required conditions
+    -- If PageType = 3 (Landing Page), check more DomainType in (0,1) also exists with same conditions
+    IF @PageType = 3
+    BEGIN
+        IF NOT EXISTS (
+            SELECT TOP 1 1 
+            FROM dbo.Domain d WITH (NOLOCK)
+            INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                ON d.DomainName = dd.DomainName
+                AND dd.Score < 30
+                AND dd.CountryCode = @CountryCode
+                AND dd.DomainType = d.DomainType
+                AND dd.SiteId = d.SiteId
+            WHERE d.DomainName = @DomainName
+                AND d.DomainType = 0  ---- Domain from Landing Page sheet
+                AND d.SiteId = @SiteId
+                AND d.Note = ''
+                -- Check DomainType = 1 also exists with same conditions
+                AND EXISTS (
+                    SELECT 1 
+                    FROM dbo.Domain d1 WITH (NOLOCK)
+                    INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
+                        ON d1.DomainName = dd1.DomainName
+                        AND dd1.Score < 30
+                        AND dd1.CountryCode = @CountryCode
+                        AND dd1.DomainType = d1.DomainType ---- Domain from Others sheet
+                        AND dd1.SiteId = @SiteId
+                    WHERE d1.DomainName = d.DomainName
+                        AND d1.DomainType = 1
+                        AND d1.SiteId = @SiteId
+                        AND d1.Note = ''
+                )
+        )
+        BEGIN
+            SELECT @ErrCode = 1007, @ErrMsg = N'Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one.';
+            RETURN;
+        END
+    END
+    -- If PageType in (1, 2), check DomainType = 1 (Domain from Others sheet) exists with conditions
+    ELSE IF @PageType IN (1, 2)
+    BEGIN
+        IF NOT EXISTS (
+            SELECT TOP 1 1 
+            FROM dbo.Domain d WITH (NOLOCK)
+            INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                ON d.DomainName = dd.DomainName
+                AND dd.Score < 30
+                AND dd.CountryCode = @CountryCode
+                AND dd.DomainType = d.DomainType
+                AND dd.SiteId = d.SiteId
+            WHERE d.DomainName = @DomainName
+                AND d.DomainType = 1 ---- Domain from Others sheet
+                AND d.SiteId = @SiteId
+                AND d.Note = ''
+        )
+        BEGIN
+            SELECT @ErrCode = 1008, @ErrMsg = N'Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one.';
+            RETURN;
+        END
+    END
+    
+
+    -- Validate ShortLink exists in Domain table with required conditions
+    BEGIN
+        IF NOT EXISTS (
+            SELECT TOP 1 1 
+            FROM dbo.Domain d WITH (NOLOCK)
+            INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
+                ON d.DomainName = dd.DomainName
+                AND dd.Score < 30
+                AND dd.CountryCode = @CountryCode
+                AND dd.DomainType = d.DomainType
+                AND dd.SiteId = d.SiteId
+            WHERE d.DomainName = @ShortLink
+                AND d.DomainType = 2  ---- Domain from ShortLink
+                AND d.SiteId = @SiteId
+                AND d.Note = ''
+        )
+        BEGIN
+            SELECT @ErrCode = 1009, @ErrMsg = N'Short Link Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one';
+            RETURN;
+        END
+        
+    END 
+    ---------------------------
+     -- Handle IDCode generation or validation
     IF @IDCode IS NULL OR @IDCode = ''
     BEGIN
         -- Generate new IDCode by calling OH_IDCode_Ins
@@ -78,157 +224,11 @@ BEGIN
         -- Validate that IDCode exists in IDCode table
         IF NOT EXISTS (SELECT TOP 1 1 FROM dbo.IDCode WITH (NOLOCK) WHERE IDCode = @IDCode)
         BEGIN
-            SELECT @ErrCode = 1004, @ErrMsg = N'IDCode does not exist in IDCode table';
+            SELECT @ErrCode = 1004, @ErrMsg = N'IDCode does not exist.';
             RETURN;
         END
     END
-
-    -- Check for duplicate LinkName
-    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE LinkName = @LinkName AND StatusID = 1)
-    BEGIN
-        SELECT @ErrCode = 1005, @ErrMsg = N'LinkName already exists';
-        RETURN;
-    END
-
-    -- Validate DomainName exists in Domain table with required conditions
-    IF @DomainName IS NOT NULL AND @DomainName <> ''
-    BEGIN
-        -- If PageType = 0 (Landing Page), check if DomainType = 1 also exists with same conditions
-        IF @PageType = 0
-        BEGIN
-            IF NOT EXISTS (
-                SELECT TOP 1 1 
-                FROM dbo.Domain d WITH (NOLOCK)
-                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                    ON d.DomainName = dd.DomainName
-                    AND dd.Score < 30
-                    AND dd.CountryCode = @CountryCode
-                    AND dd.DomainType = d.DomainType
-                    AND dd.SiteId = d.SiteId
-                WHERE d.DomainName = @DomainName
-                  AND d.DomainType = @PageType
-                  AND d.SiteId = @SiteId
-                  AND d.Note = ''
-                  -- Check if DomainType = 1 also exists with same conditions
-                  AND EXISTS (
-                      SELECT 1 
-                      FROM dbo.Domain d1 WITH (NOLOCK)
-                      INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
-                          ON d1.DomainName = dd1.DomainName
-                          AND dd1.Score < 30
-                          AND dd1.CountryCode = @CountryCode
-                          AND dd1.DomainType = 1
-                          AND dd1.SiteId = @SiteId
-                      WHERE d1.DomainName = d.DomainName
-                          AND d1.DomainType = 1
-                          AND d1.SiteId = @SiteId
-                          AND d1.Note = ''
-                  )
-            )
-            BEGIN
-                SELECT @ErrCode = 1006, @ErrMsg = N'DomainName does not exist in Domain table with required conditions (DomainType 0 and 1, Note empty, Score < 30, CountryCode)';
-                RETURN;
-            END
-        END
-        ELSE
-        BEGIN
-            IF NOT EXISTS (
-                SELECT TOP 1 1 
-                FROM dbo.Domain d WITH (NOLOCK)
-                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                    ON d.DomainName = dd.DomainName
-                    AND dd.Score < 30
-                    AND dd.CountryCode = @CountryCode
-                    AND dd.DomainType = d.DomainType
-                    AND dd.SiteId = d.SiteId
-                WHERE d.DomainName = @DomainName
-                  AND d.DomainType = @PageType
-                  AND d.SiteId = @SiteId
-                  AND d.Note = ''
-            )
-            BEGIN
-                SELECT @ErrCode = 1006, @ErrMsg = N'DomainName does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
-                RETURN;
-            END
-        END
-    END
-
-    -- Validate ShortLink exists in Domain table with required conditions
-    IF @ShortLink IS NOT NULL AND @ShortLink <> ''
-    BEGIN
-        -- If PageType = 0 (Landing Page), check if DomainType = 1 also exists with same conditions
-        IF @PageType = 0
-        BEGIN
-            IF NOT EXISTS (
-                SELECT TOP 1 1 
-                FROM dbo.Domain d WITH (NOLOCK)
-                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                    ON d.DomainName = dd.DomainName
-                    AND dd.Score < 30
-                    AND dd.CountryCode = @CountryCode
-                    AND dd.DomainType = d.DomainType
-                    AND dd.SiteId = d.SiteId
-                WHERE d.DomainName = @ShortLink
-                  AND d.DomainType = @PageType
-                  AND d.SiteId = @SiteId
-                  AND d.Note = ''
-                  -- Check if DomainType = 1 also exists with same conditions
-                  AND EXISTS (
-                      SELECT 1 
-                      FROM dbo.Domain d1 WITH (NOLOCK)
-                      INNER JOIN dbo.DomainDetail dd1 WITH (NOLOCK)
-                          ON d1.DomainName = dd1.DomainName
-                          AND dd1.Score < 30
-                          AND dd1.CountryCode = @CountryCode
-                          AND dd1.DomainType = 1
-                          AND dd1.SiteId = @SiteId
-                      WHERE d1.DomainName = d.DomainName
-                          AND d1.DomainType = 1
-                          AND d1.SiteId = @SiteId
-                          AND d1.Note = ''
-                  )
-            )
-            BEGIN
-                SELECT @ErrCode = 1007, @ErrMsg = N'ShortLink does not exist in Domain table with required conditions (DomainType 0 and 1, Note empty, Score < 30, CountryCode)';
-                RETURN;
-            END
-        END
-        ELSE
-        BEGIN
-            IF NOT EXISTS (
-                SELECT TOP 1 1 
-                FROM dbo.Domain d WITH (NOLOCK)
-                INNER JOIN dbo.DomainDetail dd WITH (NOLOCK)
-                    ON d.DomainName = dd.DomainName
-                    AND dd.Score < 30
-                    AND dd.CountryCode = @CountryCode
-                    AND dd.DomainType = d.DomainType
-                    AND dd.SiteId = d.SiteId
-                WHERE d.DomainName = @ShortLink
-                  AND d.DomainType = @PageType
-                  AND d.SiteId = @SiteId
-                  AND d.Note = ''
-            )
-            BEGIN
-                SELECT @ErrCode = 1007, @ErrMsg = N'ShortLink does not exist in Domain table with required conditions (DomainType, Note empty, Score < 30, CountryCode)';
-                RETURN;
-            END
-        END
-    END
-
-    -- Check for duplicate DomainName in LinkGenerator
-    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE DomainName = @DomainName)
-    BEGIN
-        SELECT @ErrCode = 1008, @ErrMsg = N'DomainName already exists in LinkGenerator';
-        RETURN;
-    END
-
-    -- Check for duplicate ShortLink in LinkGenerator
-    IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE ShortLink = @ShortLink)
-    BEGIN
-        SELECT @ErrCode = 1009, @ErrMsg = N'ShortLink already exists in LinkGenerator';
-        RETURN;
-    END
+    -- =========================
 
     INSERT INTO dbo.LinkGenerator (
         LinkName,
@@ -236,19 +236,21 @@ BEGIN
         CampaignId,
         CountryCode,
         MarketId,
-        EventId,
+        EventIds,
         GroupId,
         ChannelId,
         AgencyId,
         TypeId,
-        PageId,
+        PageCode,
         PageType,
         Note,
         DomainName,
         ShortLink,
+        ShortPath,
         FullLink,
         SiteId,
         StatusId,
+        Creator,
         CreatedDate
     )
     VALUES (
@@ -257,19 +259,21 @@ BEGIN
         @CampaignId,
         @CountryCode,
         @MarketId,
-        @EventId,
+        @EventIds,
         @GroupId,
         @ChannelId,
         @AgencyId,
         @TypeId,
-        @PageId,
+        @PageCode,
         @PageType,
         @Note,
         @DomainName,
         @ShortLink,
+        @ShortPath,
         @FullLink,
         @SiteId,
         @StatusId,
+        @UserId,
         DATEADD(HOUR, @TimeZone, GETUTCDATE())
     );
 
@@ -280,11 +284,17 @@ BEGIN
     -- =========================
     DECLARE @DomainUpdErrCode INT = 0;
     DECLARE @DomainUpdErrMsg NVARCHAR(MAX) = '';
+    DECLARE @DomainType TINYINT;
+
+    IF @PageType = 3 
+       SET @DomainType = 0
+    ELSE 
+       SET @DomainType = 1
 
     EXEC dbo.OH_Domain_Upd
         @DomainName = @DomainName,
-        @Note = @Note,
-        @DomainType = @TypeId,
+        @Note = @DomainNote,
+        @DomainType = @DomainType,
         @SiteId = @SiteId,
         @UserId = @UserId,
         @IP = @IP,
@@ -330,40 +340,33 @@ BEGIN
     -- Get Page name
     SELECT @PageName = PageName
     FROM dbo.PageBuilder WITH (NOLOCK)
-    WHERE PageId = @PageId;
+    WHERE PageCode = @PageCode;
 
-    -- Determine TypeName based on TypeId
-    SELECT @TypeName = CASE @TypeId
-        WHEN 0 THEN 'Landing Page'
-        WHEN 1 THEN 'Domain Others'
-        WHEN 2 THEN 'ShortLink'
-        ELSE 'Unknown'
-    END;
 
     -- Compose @NewData JSON
     SELECT @NewData = ISNULL((
         SELECT 
-            ISNULL(@LinkId, 0) AS 'LinkId',
-            ISNULL(@LinkName, '') AS 'LinkName',
-            ISNULL(@IDCode, '') AS 'IDCode',
-            ISNULL(@CampaignName, '') AS 'Campaign',
-            ISNULL(@CountryName, '') AS 'Country',
-            ISNULL(@MarketName, '') AS 'Market',
-            ISNULL(@EventId, 0) AS 'EventId',
-            ISNULL(@GroupId, 0) AS 'GroupId',
-            ISNULL(@ChannelId, 0) AS 'ChannelId',
-            ISNULL(@AgencyId, 0) AS 'AgencyId',
-            ISNULL(@TypeId, 0) AS 'TypeId',
-            ISNULL(@TypeName, '') AS 'TypeName',
-            ISNULL(@PageId, 0) AS 'PageId',
-            ISNULL(@PageName, '') AS 'PageName',
-            ISNULL(@PageType, 0) AS 'PageType',
-            ISNULL(@Note, '') AS 'Note',
-            ISNULL(@DomainName, '') AS 'DomainName',
-            ISNULL(@ShortLink, '') AS 'ShortLink',
-            ISNULL(@FullLink, '') AS 'FullLink',
-            ISNULL(@SiteId, 0) AS 'SiteId',
-            ISNULL(@StatusId, 0) AS 'StatusId'
+            ISNULL(@LinkId, 0) AS 'lid',
+            ISNULL(@LinkName, '') AS 'ln',
+            ISNULL(@IDCode, '') AS 'idc',
+            ISNULL(@CampaignName, '') AS 'cn',
+            ISNULL(@CountryName, '') AS 'cty',
+            ISNULL(@MarketName, '') AS 'mkt',
+            ISNULL(@EventIds, '') AS 'eids',
+            ISNULL(@GroupId, 0) AS 'gid',
+            ISNULL(@ChannelId, 0) AS 'chid',
+            ISNULL(@AgencyId, 0) AS 'aid',
+            ISNULL(@TypeId, 0) AS 'tid',
+            ISNULL(@PageCode, 0) AS 'pc',
+            ISNULL(@PageName, '') AS 'pn',
+            ISNULL(@PageType, 0) AS 'pt',
+            ISNULL(@Note, '') AS 'nt',
+            ISNULL(@DomainName, '') AS 'dn',
+            ISNULL(@ShortLink, '') AS 'sl',
+            ISNULL(@ShortPath, '') AS 'sp',
+            ISNULL(@FullLink, '') AS 'fl',
+            ISNULL(@SiteId, 0) AS 'sid',
+            ISNULL(@StatusId, 0) AS 'st'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     ), '{}');
 
