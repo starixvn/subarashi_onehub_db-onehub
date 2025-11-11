@@ -116,7 +116,7 @@ CREATE TABLE LinkGenerator (
     PageType TINYINT NULL,
     Note NVARCHAR(500) NULL,
     DomainName VARCHAR(200) NULL,
-    ShortLink VARCHAR(500) NULL,
+    ShortDomain VARCHAR(500) NULL,
     ShortPath VARCHAR(50) NULL,
     FullLink VARCHAR(1000) NULL,
     SiteId SMALLINT NULL,

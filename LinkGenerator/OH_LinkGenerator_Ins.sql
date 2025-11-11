@@ -15,7 +15,7 @@ ALTER PROCEDURE [dbo].[OH_LinkGenerator_Ins]
     @DomainName VARCHAR(200),
     @DomainNote NVARCHAR(200),
     @Note NVARCHAR(500),
-    @ShortLink VARCHAR(500),
+    @ShortDomain VARCHAR(500),
     @ShortPath VARCHAR(50),
     @FullLink VARCHAR(1000),
     @SiteId SMALLINT = 101,
@@ -62,7 +62,7 @@ AS
             @DomainName = '12gogofun.com',
             @DomainNote = 'Reserved for Q4 Campaign',
             @Note = 'Link Generator Note',
-            @ShortLink = '002AC.nufrel.com',
+            @ShortDomain = '002AC.nufrel.com',
             @ShortPath = 'ABC',
             @FullLink = 'https://12gogofun.com/campaign?@CampaignId=100',
             @SiteId = 101,
@@ -190,7 +190,7 @@ BEGIN
     END
     
 
-    -- Validate ShortLink exists in Domain table with required conditions
+    -- Validate ShortDomain exists in Domain table with required conditions
     BEGIN
         IF NOT EXISTS (
             SELECT TOP 1 1 
@@ -201,13 +201,13 @@ BEGIN
                 AND dd.CountryCode = @CountryCode
                 AND dd.DomainType = d.DomainType
                 AND dd.SiteId = d.SiteId
-            WHERE d.DomainName = @ShortLink
+            WHERE d.DomainName = @ShortDomain
                 AND d.DomainType = 2  ---- Domain from ShortLink
                 AND d.SiteId = @SiteId
                 AND d.Note = ''
         )
         BEGIN
-            SELECT @ErrCode = 1009, @ErrMsg = N'Short Link Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one';
+            SELECT @ErrCode = 1009, @ErrMsg = N'Short Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one';
             RETURN;
         END
         
@@ -245,7 +245,7 @@ BEGIN
         PageType,
         Note,
         DomainName,
-        ShortLink,
+        ShortDomain,
         ShortPath,
         FullLink,
         SiteId,
@@ -268,7 +268,7 @@ BEGIN
         @PageType,
         @Note,
         @DomainName,
-        @ShortLink,
+        @ShortDomain,
         @ShortPath,
         @FullLink,
         @SiteId,
@@ -362,7 +362,7 @@ BEGIN
             ISNULL(@PageType, 0) AS 'pt',
             ISNULL(@Note, '') AS 'nt',
             ISNULL(@DomainName, '') AS 'dn',
-            ISNULL(@ShortLink, '') AS 'sl',
+            ISNULL(@ShortDomain, '') AS 'sd',
             ISNULL(@ShortPath, '') AS 'sp',
             ISNULL(@FullLink, '') AS 'fl',
             ISNULL(@SiteId, 0) AS 'sid',

@@ -82,7 +82,7 @@ BEGIN
             lg.PageType AS 'pt',
             ISNULL(lg.Note, '') AS 'nt',
             lg.DomainName AS 'dn',
-            ISNULL(lg.ShortLink, '') AS 'sl',
+            ISNULL(lg.ShortDomain, '') AS 'sd',
             ISNULL(lg.FullLink, '') AS 'fl',
             lg.SiteId AS 'sid',
             lg.StatusId AS 'st'
@@ -127,7 +127,7 @@ BEGIN
             lg.PageType AS 'pt',
             ISNULL(lg.Note, '') AS 'nt',
             lg.DomainName AS 'dn',
-            ISNULL(lg.ShortLink, '') AS 'sl',
+            ISNULL(lg.ShortDomain, '') AS 'sd',
             ISNULL(lg.FullLink, '') AS 'fl',
             lg.SiteId AS 'sid',
             lg.StatusId AS 'st'
