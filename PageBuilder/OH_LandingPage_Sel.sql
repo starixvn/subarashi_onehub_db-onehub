@@ -19,15 +19,17 @@ BEGIN
 	
 	; WITH t AS
 	(
-		SELECT  PageCode, 
-				PageName, 
+		SELECT  pb.PageCode, 
+				pb.PageName, 
 				'Mobile' Category, 				
 				3 AS LandingPageType,
-				TargetCountryCode,
-				MarketId,
-				CampaignId
-		FROM 	PageBuilder WITH(NOLOCK)
-		WHERE 	StatusId = 1 
+				pb.TargetCountryCode,
+				pb.MarketId,
+				pb.CampaignId,
+				c.CampaignCode
+		FROM 	PageBuilder pb WITH(NOLOCK)
+		LEFT JOIN Campaign c WITH(NOLOCK) ON pb.CampaignId = c.CampaignId
+		WHERE 	pb.StatusId = 1 
 		UNION ALL
 		SELECT 	ComponentCode AS PageCode, 
 				ComponentName AS PageName, 
@@ -35,12 +37,13 @@ BEGIN
 				CASE WHEN CategoryType = 1 THEN 2 ELSE 1 END AS LandingPageType,
 				'' AS TargetCountryCode,
 				'' AS MarketId,
-				'' AS CampaignId
+				'' AS CampaignId,
+				'' AS CampaignCode
 		FROM 	Component WITH(NOLOCK)
 		WHERE 	ComponentTypeId = 6
 				AND StatusId = 1
 	)
-	SELECT PageCode, PageName, Category, LandingPageType, TargetCountryCode, MarketId, CampaignId
+	SELECT PageCode, PageName, Category, LandingPageType, TargetCountryCode, MarketId, CampaignId, CampaignCode
 	FROM t
 	ORDER BY Category ASC, PageName ASC
 END

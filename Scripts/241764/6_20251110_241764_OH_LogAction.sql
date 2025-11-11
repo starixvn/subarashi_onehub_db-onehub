@@ -354,6 +354,35 @@ INSERT [dbo].[LogAction] ([ActionId], [ActionTypeId], [SPName], [Items], [Action
     }
   ]
 }', N'Update Page Builder status only')
+
+INSERT [dbo].[LogAction] ([ActionId], [ActionTypeId], [SPName], [Items], [ActionName]) VALUES (20, 1, N'OH_Domain_Upd', N'{
+  "Items": [
+    {
+      "Alias": "dmn",
+      "Item": "Domain Name"
+    },
+    {
+      "Alias": "dt",
+      "Item": "Domain Type"
+    },
+    {
+      "Alias": "pc",
+      "Item": "Page Code"
+    },
+    {
+      "Alias": "nt",
+      "Item": "Note"
+    },
+    {
+      "Alias": "sid",
+      "Item": "SiteId"
+    },
+    {
+      "Alias": "cd",
+      "Item": "Created Date"
+    }
+  ]
+}', N'Domain update')
 GO
 INSERT [dbo].[LogType] ([TypeId], [TypeName], [Description]) VALUES (1, N'LandingPage', N'Landing Page Builder Management')
 GO

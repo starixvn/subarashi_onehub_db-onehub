@@ -86,11 +86,11 @@ BEGIN
     -- Capture old data before update
     SELECT @OldData = ISNULL((
         SELECT 
-            ISNULL(d.DomainName, '') AS 'DomainName',
-            ISNULL(d.DomainType, 0) AS 'DomainType',
-            ISNULL(d.Note, '') AS 'Note',
-            ISNULL(d.SiteId, 0) AS 'SiteId',
-            CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'CreatedDate'
+            ISNULL(d.DomainName, '') AS 'dmn',
+            ISNULL(d.DomainType, 0) AS 'dt',
+            ISNULL(d.Note, '') AS 'nt',
+            ISNULL(d.SiteId, 0) AS 'sid',
+            CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'cd'
         FROM dbo.Domain d WITH (NOLOCK)
         WHERE d.DomainName = @DomainName
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
@@ -106,11 +106,11 @@ BEGIN
     -- Capture new data after update
     SELECT @NewData = ISNULL((
         SELECT 
-            ISNULL(d.DomainName, '') AS 'DomainName',
-            ISNULL(d.DomainType, 0) AS 'DomainType',
-            ISNULL(d.Note, '') AS 'Note',
-            ISNULL(d.SiteId, 0) AS 'SiteId',
-            CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'CreatedDate'
+            ISNULL(d.DomainName, '') AS 'dmn',
+            ISNULL(d.DomainType, 0) AS 'dt',
+            ISNULL(d.Note, '') AS 'nt',
+            ISNULL(d.SiteId, 0) AS 'sid',
+            CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'cd'
         FROM dbo.Domain d WITH (NOLOCK)
         WHERE d.DomainName = @DomainName
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
