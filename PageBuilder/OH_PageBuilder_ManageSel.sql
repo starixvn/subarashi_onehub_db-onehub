@@ -1,16 +1,17 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_LandingPage_Builder_ManageSel]
+ALTER PROCEDURE [dbo].[OH_PageBuilder_ManageSel]
 	@CampaignName VARCHAR(200) = '', -- Search in both CampaignName and CampaignCode
 	@PageName VARCHAR(200) = '', -- Search in both PageName and PageCode
 	@TargetCountryCodes VARCHAR(500) = '',
 	@MarketIds VARCHAR(500) = '',
-	@DealIds VARCHAR(2000) = '',
 	@StatusIds VARCHAR(500) = '',
 	@CampaignIds VARCHAR(500) = '',
 	@IsExportExcel BIT = 0,
 	@PageIndex INT = 1,
     @PageSize INT = 20,
-    @NRows INT = 0 OUTPUT
+    @NRows INT = 0 OUTPUT,
+	@FromDate	  DATE = NULL,
+	@ToDate		  DATE = NULL
 AS
 /*
 	Created: 20250826@Sophia
@@ -111,7 +112,8 @@ BEGIN
 			OR EXISTS (
 				SELECT 1 FROM STRING_SPLIT(@CampaignIds, ',') s WHERE CONVERT(VARCHAR(10), b.CampaignId) = s.value
 			)
-		);
+		)
+		AND b.CreatedDate BETWEEN @FromDate AND DATEADD(DAY,1, @ToDate);
 
     -- Get total row count
     SELECT @NRows = COUNT(*) FROM #Data;

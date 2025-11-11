@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Component_Ins]
+ALTER PROCEDURE [dbo].[OH_Component_Ins]
     @ComponentTypeId   INT,
     @ComponentName     VARCHAR(200),
     @ComponentCode     VARCHAR(200),
@@ -91,7 +91,9 @@ BEGIN
             Creator,
             CreatedDate,
             StatusId,
-			CategoryType
+			CategoryType,
+			UpdatedBy,
+			UpdatedDate
         )
         VALUES
         (
@@ -101,7 +103,9 @@ BEGIN
             @UserId,
             @CurrentDate,
             @StatusId,
-			@DeviceId
+			@DeviceId,
+			@UserId,
+			@CurrentDate
         );
 
         SELECT @ComponentId = SCOPE_IDENTITY();

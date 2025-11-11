@@ -1,7 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" viewers="" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_ClickStatisticsIns]
+ALTER PROCEDURE [dbo].[OH_ClickStatisticsIns]
 	@ClickId			BIGINT
-	,@IDCode			VARCHAR(20)
 	,@UpdatedTime		DATETIME = NULL
 	,@IP				VARCHAR(25) = ''
 	,@Browser			NVARCHAR(50) = ''
@@ -12,12 +11,10 @@ CREATE PROCEDURE [dbo].[OH_ClickStatisticsIns]
 	,@BrowserVersion	NVARCHAR(16) = ''
 	,@BrowserLanguage	NVARCHAR(8) = ''
 	,@UserAgent			NVARCHAR(256) = ''
-	,@RedirectURL		NVARCHAR(256) = NULL
+	,@RedirectURL		VARCHAR(4000) = NULL
 	,@DeviceType		TINYINT = 0
 	,@ClickTypeId		TINYINT = 0
 	,@LinkId			INT = 0
-	,@Fulllink			VARCHAR(1000) = NULL
-	,@ShortLink			VARCHAR(500) = NULL
 	,@ErrCode			INT = 0 OUTPUT
 	,@ErrMsg			NVARCHAR(4000) = '' OUTPUT
 
@@ -40,7 +37,6 @@ BEGIN
 		INSERT INTO dbo.ClickStatistics
 		(
 			[ClickId],
-			[IdCode],
 			[UpdatedTime],
 			[Date],
 			[IP],
@@ -55,15 +51,12 @@ BEGIN
 			[DeviceType],
 			[UserAgent],
 			[LinkId],
-			[FullLink],
-			[ShortLink],
 			[SiteId],
 			[ClickTypeId]
 		)
 		VALUES
 		(
 			@ClickId, 
-			@IDCode, 
 			@UpdatedTime, 
 			CAST(@UpdatedTime AS DATE), 
 			@IP, 
@@ -78,9 +71,7 @@ BEGIN
 			@DeviceType,
 			@UserAgent, 
 			@LinkId,
-			@Fulllink, 
-			@ShortLink, 
-			9999, --hardcode
+			101, -- 12B
 			@ClickTypeId
 		);
 

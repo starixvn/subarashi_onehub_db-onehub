@@ -57,6 +57,7 @@ BEGIN
 		SELECT @OldData = (
 			SELECT c.CampaignId    AS 'ci'
 				   ,c.CampaignName AS 'cn'
+				   ,c.CampaignCode AS 'cc'
 				   ,c.Description  AS 'ds'
 				   ,s.Status       AS 's'
 			FROM dbo.Campaign c WITH (NOLOCK)
@@ -91,6 +92,7 @@ BEGIN
 		SELECT @NewData = (
 			SELECT c.CampaignId    AS 'ci'
 				   ,c.CampaignName AS 'cn'
+				   ,c.CampaignCode AS 'cc'
 				   ,c.Description  AS 'ds'
 				   ,s.Status       AS 's'
 			FROM dbo.Campaign c WITH (NOLOCK)

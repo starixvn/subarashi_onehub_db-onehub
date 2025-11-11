@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" selecters="wsv_oh" isFunction="1" isNested="0"></info>*/
-CREATE FUNCTION [dbo].[OH_f_LandingPage_Status]()
+CREATE FUNCTION [dbo].[OH_f_PageBuilder_Status]()
 RETURNS TABLE
 /*
 	Created: 20250826@Sophia

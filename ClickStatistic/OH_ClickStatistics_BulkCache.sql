@@ -15,7 +15,8 @@ BEGIN
 
 	SELECT	ShortLink, 
 			FullLink, 
-			LinkId
+			LinkId,
+			IDCode AS LinkCode
 	FROM  LinkGenerator WITH(NOLOCK)
 
 END

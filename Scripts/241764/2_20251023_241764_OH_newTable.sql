@@ -214,9 +214,7 @@ CREATE TABLE [dbo].[LogAction](
 	[ActionId] [int] NOT NULL,
 	[ActionTypeId] [int] NULL,
 	[SPName] [varchar](200) NULL,
-	[IsInternal] [bit] NULL,
 	[Items] [varchar](max) NULL,
-	[Description] [nvarchar](4000) NULL,
 	[ActionName] [varchar](256) NULL,
  CONSTRAINT [PK_LogAction] PRIMARY KEY NONCLUSTERED 
 (

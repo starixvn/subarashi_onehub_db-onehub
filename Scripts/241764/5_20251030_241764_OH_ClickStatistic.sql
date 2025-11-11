@@ -174,13 +174,12 @@ GO
 
 CREATE TABLE [dbo].[ClickStatistics](
     [ClickId]  [bigint] NOT NULL,
-	[IdCode]   [varchar](20) NOT NULL,
 	[UpdatedTime] [datetime] NOT NULL,
 	[Date] [smalldatetime] NOT NULL,
 	[IP] [varchar](25) NOT NULL,
 	[DomainReferrer] [nvarchar](300) NOT NULL,
 	[URLReferrer] [nvarchar](300) NOT NULL,
-	[RedirectURL] [nvarchar](256) NULL,
+	[RedirectURL] [varchar](4000) NULL,
 	[Browser] [nvarchar](50) NOT NULL,
 	[BrowserVersion] [nvarchar](16) NULL,
 	[BrowserLanguage] [nvarchar](8) NULL,
@@ -189,11 +188,10 @@ CREATE TABLE [dbo].[ClickStatistics](
 	[DeviceType] [tinyint] NULL,
 	[UserAgent] [nvarchar](256) NULL,
 	[LinkId] [varchar](500) NULL,
-	[FullLink] [varchar](1000) NULL,
-	[ShortLink]	[varchar](500) NULL,
 	[SiteId]	[smallint] NULL,
 	[ClickTypeId] [tinyint] NOT NULL
 )
 ON PS_ClickStatistic_RL(UpdatedTime);
 GO
+
 

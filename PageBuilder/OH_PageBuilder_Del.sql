@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-ALTER PROCEDURE [dbo].[OH_PageBuilder_Status_Del]
+ALTER PROCEDURE [dbo].[OH_PageBuilder_Del]
 	@PageIds VARCHAR(MAX),
 	@UserId INT,
 	@IP VARCHAR(50) = '',
@@ -36,7 +36,8 @@ BEGIN
 	IF EXISTS (
 		SELECT TOP 1 1 
 		FROM LinkGenerator l WITH(NOLOCK)
-		INNER JOIN @PageId_Tab p ON l.PageId = p.PageId
+		INNER JOIN PageBuilder b  WITH(NOLOCK) ON b.PageCode = l.PageCode
+		INNER JOIN @PageId_Tab p ON b.PageId = p.PageId
 	)
 	BEGIN
 		SELECT @ErrCode = 1007, @ErrMsg = N'Landing page are used in link generator function!';

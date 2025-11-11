@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_LandingPage_Status_Sel]
+CREATE PROCEDURE [dbo].[OH_PageBuilder_Status_Sel]
 AS
 /*
 	Created: 20250826@Sophia
@@ -12,7 +12,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT StatusId, Status
-	FROM dbo.OH_f_LandingPage_Status()
+	FROM dbo.OH_f_PageBuilder_Status()
 	ORDER BY StatusId ASC;
 END;
 GO

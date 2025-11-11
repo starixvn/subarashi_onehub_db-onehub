@@ -47,13 +47,13 @@ BEGIN
 	SELECT @OldData = 
 	(	
 		SELECT 
-			b.PageId,
-			b.PageName,
-			b.PageCode,
-			m.MarketName,
-			tc.CountryName,
-			c.CampaignName,
-			s.Status
+			b.PageId AS 'pid',
+			b.PageName AS 'pn',
+			b.PageCode AS 'pc',
+			m.MarketName AS 'l',
+			tc.CountryName AS 'tc',
+			c.CampaignName AS 'cn',
+			s.Status AS 'st'
 		FROM dbo.PageBuilder b WITH (NOLOCK)
 		LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 		LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND tc.MarketId = b.MarketId
@@ -81,14 +81,14 @@ BEGIN
 
 	SELECT @NewData = 
 	(	
-		SELECT 
-			b.PageId,
-			b.PageName,
-			b.PageCode,
-			m.MarketName,
-			tc.CountryName,
-			c.CampaignName,
-			s.Status
+		SELECT
+			b.PageId AS 'pid',
+			b.PageName AS 'pn',
+			b.PageCode AS 'pc',
+			m.MarketName AS 'l',
+			tc.CountryName AS 'tc',
+			c.CampaignName AS 'cn',
+			s.Status AS 'st'
 		FROM dbo.PageBuilder b WITH (NOLOCK)
 		LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 		LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND tc.MarketId = b.MarketId
@@ -108,7 +108,6 @@ BEGIN
 		@OldData	= @OldData,
 		@NewData	= @NewData,
 		@IP			= @IP,
-		@Language	= @Language,
 		@Duration	= @Duration;
 END;
 GO
