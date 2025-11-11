@@ -314,7 +314,7 @@ INSERT [dbo].[LogAction] ([ActionId], [ActionTypeId], [SPName], [Items], [Action
     {"Alias": "pt", "Item": "Page Type"},
     {"Alias": "nt", "Item": "Note"},
     {"Alias": "dn", "Item": "Domain Name"},
-    {"Alias": "sl", "Item": "Short Link"},
+    {"Alias": "sd", "Item": "Short Domain"},
     {"Alias": "sp", "Item": "Short Path"},
     {"Alias": "fl", "Item": "Full Link"},
     {"Alias": "sid", "Item": "Site Id"},
