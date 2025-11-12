@@ -10,6 +10,12 @@ GO
 
 USE [ONEHub]
 GO
+
+TRUNCATE TABLE LogType
+INSERT INTO LogType (TypeId,	TypeName,	Description) VALUES (1,	'LandingPage','Landing Page Builder Management')
+
+
+TRUNCATE TABLE LogAction
 INSERT [dbo].[LogAction] ([ActionId], [ActionTypeId], [SPName], [Items], [ActionName]) VALUES (1, 1, N'OH_AssetUploader_Del', N'{
     "Items": [
         {"Alias": "ai", "Item": "Asset Information"},

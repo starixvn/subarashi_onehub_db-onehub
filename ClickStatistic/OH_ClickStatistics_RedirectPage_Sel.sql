@@ -1,6 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" viewers="" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE dbo.OH_ClickStatistics_RedirectPage_Sel
-	@LinkCode	VARCHAR(20)
+	@ShortPath	VARCHAR(50)
 
 AS
 /*
@@ -16,12 +16,12 @@ BEGIN
 	SET NOCOUNT ON;
 
 
-	SELECT  ShortLink,
+	SELECT  ShortDomain,
+			ShortPath
 			FullLink,
-			LinkId,
-            IDCode AS LinkCode
+			LinkId
 	FROM	LinkGenerator WITH(NOLOCK)
-	WHERE   IDCode = @LinkCode AND StatusId = 1
+	WHERE   ShortPath = @ShortPath
 
 
 END;

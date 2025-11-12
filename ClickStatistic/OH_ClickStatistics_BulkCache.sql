@@ -13,10 +13,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-	SELECT	ShortLink, 
+	SELECT	ShortDomain,
+			ShortPath,
 			FullLink, 
-			LinkId,
-			IDCode AS LinkCode
+			LinkId
 	FROM  LinkGenerator WITH(NOLOCK)
 
 END
