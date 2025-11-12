@@ -17,7 +17,7 @@ BEGIN
 
 
 	SELECT  ShortDomain,
-			ShortPath
+			ShortPath,
 			FullLink,
 			LinkId
 	FROM	LinkGenerator WITH(NOLOCK)
