@@ -1,7 +1,7 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_LinkGenerator_Ins]
     @LinkName VARCHAR(200),
-    @IDCode VARCHAR(20) OUTPUT,
+    @IDCode VARCHAR(20),
     @CampaignId INT,
     @CountryCode VARCHAR(50),
     @MarketId VARCHAR(50),
@@ -112,7 +112,13 @@ BEGIN
         SELECT @ErrCode = 1003, @ErrMsg = N'DomainName is required';
         RETURN;
     END
-   
+
+     -- Validate that IDCode exists in IDCode table
+    IF NOT EXISTS (SELECT TOP 1 1 FROM dbo.IDCode WITH (NOLOCK) WHERE IDCode = @IDCode)
+    BEGIN
+        SELECT @ErrCode = 1004, @ErrMsg = N'IDCode does not exist.';
+        RETURN;
+    END    
 
     -- Check for duplicate DomainName
     IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE DomainName = @DomainName AND StatusID = 1)
@@ -212,22 +218,7 @@ BEGIN
         END
         
     END 
-    ---------------------------
-     -- Handle IDCode generation or validation
-    IF @IDCode IS NULL OR @IDCode = ''
-    BEGIN
-        -- Generate new IDCode by calling OH_IDCode_Ins
-        EXEC dbo.OH_IDCode_Ins @SiteId = @SiteId, @IDCode = @IDCode OUTPUT;
-    END
-    ELSE
-    BEGIN
-        -- Validate that IDCode exists in IDCode table
-        IF NOT EXISTS (SELECT TOP 1 1 FROM dbo.IDCode WITH (NOLOCK) WHERE IDCode = @IDCode)
-        BEGIN
-            SELECT @ErrCode = 1004, @ErrMsg = N'IDCode does not exist.';
-            RETURN;
-        END
-    END
+  
     -- =========================
 
     INSERT INTO dbo.LinkGenerator (
