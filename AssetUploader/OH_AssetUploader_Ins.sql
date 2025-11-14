@@ -225,7 +225,7 @@ BEGIN
 
 	IF ISNULL(@ExistedFileName, '') <> ''
 	BEGIN
-		SELECT @ErrCode = 405, @ErrMsg =  CONCAT('File name(s) already exists: ', @ExistedFileName, '. Please rename or remove the file(s). before uploading.')
+		SELECT @ErrCode = 405, @ErrMsg =  CONCAT('File name(s) already exists: ', @ExistedFileName, '. Please rename or remove the file(s) before uploading.')
 		RETURN
 	END
 
@@ -240,7 +240,7 @@ BEGIN
 
 	IF ISNULL(@ExistedMediaName, '') <> ''
 	BEGIN
-		SELECT @ErrCode = 406, @ErrMsg = CONCAT('Form name(s) already exists: ', @ExistedMediaName, '. Please rename or remove the file(s). before uploading.')
+		SELECT @ErrCode = 406, @ErrMsg = CONCAT('Form name(s) already exists: ', @ExistedMediaName, '. Please rename or remove the file(s) before uploading.')
 		RETURN
 	END
 

@@ -68,8 +68,8 @@ BEGIN
 		c.CategoryType DeviceId,
 		 ROW_NUMBER() OVER(ORDER BY c.ComponentId DESC) AS RowIdx
     FROM dbo.Component c WITH (NOLOCK)
-    LEFT JOIN dbo."User" u WITH (NOLOCK) ON u.CustId = c.Creator
-    LEFT JOIN dbo."User" au WITH (NOLOCK) ON au.CustId = c.UpdatedBy
+    LEFT JOIN dbo.OH_User u WITH (NOLOCK) ON u.UserId = c.Creator
+    LEFT JOIN dbo.OH_User au WITH (NOLOCK) ON au.UserId = c.UpdatedBy
     LEFT JOIN dbo.OH_f_Component_Status() s ON s.StatusId = c.StatusId
     WHERE (c.ComponentTypeId = @ComponentTypeId)
         AND (@ComponentName = '' 

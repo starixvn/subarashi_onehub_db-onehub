@@ -338,27 +338,14 @@ GO
 
 
 GO
-DROP TABLE IF EXISTS  [dbo].[User]
-CREATE TABLE [dbo].[User](
-	[CustId] [int] IDENTITY(1000000000,1) NOT NULL,
-	[PageAccess] [nvarchar](500) NULL,
-	[CreateDate] [datetime] NULL,
-	[Creator] [int] NULL,
-	[GroupId] [int] NULL,
-	[Closed] [bit] NULL,
-	[LoginCount] [tinyint] NULL,
-	[IPLogin] [varchar](20) NULL,
-	[LastLogged] [smalldatetime] NULL,
-	[On_SessionId] [int] NULL,
-	[UserName] [varchar](30) NULL,
-	[UserPwd] [varchar](40) NULL,
-	[RoleId] [tinyint] NULL,
-	[PwdExpiry] [datetime] NULL,
-	[FirstName] [nvarchar](50) NULL,
-	[LastName] [nvarchar](50) NULL,
- CONSTRAINT [PK_Affiliate_User] PRIMARY KEY CLUSTERED 
+DROP TABLE IF EXISTS  [dbo].[OH_User]
+CREATE TABLE [dbo].[OH_User](
+	[UserId] [int],
+	[UserName] [varchar](30) NULL
+
+ CONSTRAINT [PK_OH_User] PRIMARY KEY CLUSTERED 
 (
-	[CustId] ASC
+	[UserId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
 ) ON [Setting_Data]
 GO
@@ -375,63 +362,63 @@ CREATE TABLE [dbo].[SystemSettings](
 ) ON [Setting_Data]
 GO
 
-DROP TABLE IF EXISTS  [dbo].[ExchangeOanda]
-CREATE TABLE [dbo].[ExchangeOanda](
-	[ExchangeDate] [smalldatetime] NOT NULL,
-	[ExchangeId] [int] NOT NULL,
-	[Code] [varchar](5) NULL,
-	[ActualRate] [float] NULL,
-	[VND] [float] NULL,
-	[EUR] [float] NULL,
-	[USD] [float] NULL,
-	[CNY] [float] NULL,
-	[MYR] [float] NULL,
-	[THB] [float] NULL,
-	[IDR] [float] NULL,
-	[BDT] [float] NULL,
-	[INR] [float] NULL,
- CONSTRAINT [PK_ExchangeOanda] PRIMARY KEY CLUSTERED 
-(
-	[ExchangeDate] ASC,
-	[ExchangeId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
-) ON [Setting_Data]
-GO
+--DROP TABLE IF EXISTS  [dbo].[ExchangeOanda]
+--CREATE TABLE [dbo].[ExchangeOanda](
+--	[ExchangeDate] [smalldatetime] NOT NULL,
+--	[ExchangeId] [int] NOT NULL,
+--	[Code] [varchar](5) NULL,
+--	[ActualRate] [float] NULL,
+--	[VND] [float] NULL,
+--	[EUR] [float] NULL,
+--	[USD] [float] NULL,
+--	[CNY] [float] NULL,
+--	[MYR] [float] NULL,
+--	[THB] [float] NULL,
+--	[IDR] [float] NULL,
+--	[BDT] [float] NULL,
+--	[INR] [float] NULL,
+-- CONSTRAINT [PK_ExchangeOanda] PRIMARY KEY CLUSTERED 
+--(
+--	[ExchangeDate] ASC,
+--	[ExchangeId] ASC
+--)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+--) ON [Setting_Data]
+--GO
 
 
-DROP TABLE IF EXISTS  [dbo].[MemberInfo]
-CREATE TABLE [dbo].[MemberInfo](
-	[CustId] [int] NOT NULL,
-	[UserName] [varchar](30) NOT NULL,
-	[FirstName] [nvarchar](50) NULL,
-	[LastName] [nvarchar](50) NULL,
-	[Email] [nvarchar](50) NULL,
-	[Currency] [int] NULL,
-	[ActStatus] [tinyint] NULL,
-	[Status] [tinyint] NULL,
-	[RegisteredDate] [datetime] NULL,
-	[IDCode] [varchar](20) NOT NULL,
-	[IBCCustId] [int] NULL,
-	[IBCUserName] [varchar](30) NULL,
-	[CreatedDate] [datetime] NULL,
-	[IsRemoved] [bit] NULL,
-	[Recommend] [int] NULL,
-	[ClickId] [bigint] NULL,
-	[FirstDepositDate] [datetime] NULL,
-	[FirstDepositAmount] [money] NULL,
-	[AffMediaLinkId] [int] NULL,
-	[TagList] [nvarchar](max) NULL,
- CONSTRAINT [PK_MemberInfo] PRIMARY KEY CLUSTERED 
-(
-	[CustId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Report_Data]
-) ON [Report_Data] TEXTIMAGE_ON [Report_Data]
-GO
+--DROP TABLE IF EXISTS  [dbo].[MemberInfo]
+--CREATE TABLE [dbo].[MemberInfo](
+--	[CustId] [int] NOT NULL,
+--	[UserName] [varchar](30) NOT NULL,
+--	[FirstName] [nvarchar](50) NULL,
+--	[LastName] [nvarchar](50) NULL,
+--	[Email] [nvarchar](50) NULL,
+--	[Currency] [int] NULL,
+--	[ActStatus] [tinyint] NULL,
+--	[Status] [tinyint] NULL,
+--	[RegisteredDate] [datetime] NULL,
+--	[IDCode] [varchar](20) NOT NULL,
+--	[IBCCustId] [int] NULL,
+--	[IBCUserName] [varchar](30) NULL,
+--	[CreatedDate] [datetime] NULL,
+--	[IsRemoved] [bit] NULL,
+--	[Recommend] [int] NULL,
+--	[ClickId] [bigint] NULL,
+--	[FirstDepositDate] [datetime] NULL,
+--	[FirstDepositAmount] [money] NULL,
+--	[AffMediaLinkId] [int] NULL,
+--	[TagList] [nvarchar](max) NULL,
+-- CONSTRAINT [PK_MemberInfo] PRIMARY KEY CLUSTERED 
+--(
+--	[CustId] ASC
+--)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Report_Data]
+--) ON [Report_Data] TEXTIMAGE_ON [Report_Data]
+--GO
 
-ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_IsRemoved]  DEFAULT ((0)) FOR [IsRemoved]
-GO
+--ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_IsRemoved]  DEFAULT ((0)) FOR [IsRemoved]
+--GO
 
-ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_ClickId]  DEFAULT ((0)) FOR [ClickId]
-GO
+--ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_ClickId]  DEFAULT ((0)) FOR [ClickId]
+--GO
 
 

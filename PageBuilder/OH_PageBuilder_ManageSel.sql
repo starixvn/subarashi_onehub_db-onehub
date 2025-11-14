@@ -77,8 +77,8 @@ BEGIN
 	LEFT JOIN dbo.OH_f_GetTargetLanguageCode() lcm ON m.ShortedCode = lcm.ShortedCode
 	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON b.StatusId = s.StatusId
 	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON b.CampaignId = c.CampaignId
-	LEFT JOIN dbo."User" u1 WITH (NOLOCK) ON u1.CustId = b.Creator
-	LEFT JOIN dbo."User" u2 WITH (NOLOCK) ON u2.CustId = b.UpdatedBy
+	LEFT JOIN dbo.OH_User u1 WITH (NOLOCK) ON u1.UserId = b.Creator
+	LEFT JOIN dbo.OH_User u2 WITH (NOLOCK) ON u2.UserId = b.UpdatedBy
 	WHERE
 		(@CampaignName = '' 
 			OR c.CampaignName LIKE '%' + @CampaignName + '%'
