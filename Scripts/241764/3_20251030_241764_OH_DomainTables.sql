@@ -30,7 +30,7 @@ CREATE TABLE Domain (
     DomainName VARCHAR(200) NOT NULL,
     DomainType TINYINT NULL,
     Note NVARCHAR(200) NULL,
-    CreatedDate DATETIME NOT NULL CONSTRAINT DF_Domain_CreatedDate DEFAULT GETDATE(),
+    CreatedDate DATETIME NOT NULL,
     SiteId SMALLINT NULL,
     CONSTRAINT PK_Domain PRIMARY KEY NONCLUSTERED (Id)
 ) 
@@ -67,32 +67,7 @@ ON DomainDetail (DomainName);
 CREATE NONCLUSTERED INDEX IX_DomainDetail_Country 
 ON DomainDetail (CountryCode);
 
--- 3. Drop & Create DomainLog Table
-IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainLog]') AND type IN (N'U'))
-BEGIN
-    DROP TABLE [dbo].[DomainLog];
-END
-GO
-
-CREATE TABLE DomainLog (
-    Id INT IDENTITY(1,1) NOT NULL,
-    DomainName VARCHAR(200) NOT NULL,
-    Info NVARCHAR(200) NULL,
-    CreatedDate DATETIME NOT NULL CONSTRAINT DF_DomainLog_CreatedDate DEFAULT GETDATE(),
-    CONSTRAINT PK_DomainLog PRIMARY KEY NONCLUSTERED (Id)   -- PK changed to NONCLUSTERED
-) 
-ON [SETTING_DATA]
-WITH (DATA_COMPRESSION = PAGE);
-
--- Create CLUSTERED index on DomainName for DomainLog and remove redundant nonclustered index
-CREATE CLUSTERED INDEX IX_DomainLog_DomainName 
-ON DomainLog (DomainName);
-
--- Create index on CreatedDate for log queries
-CREATE NONCLUSTERED INDEX IX_DomainLog_CreatedDate 
-ON DomainLog (CreatedDate);
-
-GO
+ 
 -- 4. Drop & Create LinkGenerator Table
 IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[LinkGenerator]') AND type IN (N'U'))
 BEGIN
