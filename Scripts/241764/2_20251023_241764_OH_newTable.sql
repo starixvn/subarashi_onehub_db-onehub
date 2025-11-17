@@ -174,6 +174,16 @@ CREATE TABLE ComponentType (
 ON [SETTING_DATA];
 GO
 
+SET IDENTITY_INSERT ComponentType ON
+INSERT INTO ComponentType (ComponentTypeId, ComponentTypeName)
+SELECT 1 AS ComponentTypeId, 'Event'	ComponentTypeName
+UNION ALL SELECT 2 AS ComponentTypeId, 'Media Group'	ComponentTypeName
+UNION ALL SELECT 3 AS ComponentTypeId, 'Media Channel'	ComponentTypeName
+UNION ALL SELECT 4 AS ComponentTypeId, 'Media Agency'	ComponentTypeName
+UNION ALL SELECT 5 AS ComponentTypeId, 'Media Type'	ComponentTypeName
+UNION ALL SELECT 6 AS ComponentTypeId, 'Landing Page'	ComponentTypeName
+SET IDENTITY_INSERT ComponentType OFF
+
 --10. Drop & Create Component
 DROP TABLE IF EXISTS dbo.[Component];
 CREATE TABLE [dbo].[Component](
@@ -239,10 +249,6 @@ CREATE TABLE [dbo].[TargetCountry](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [SETTING_DATA]
 GO
-
---INSERT INTO TargetCountry (MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode)
---SELECT MarketID, MarketName, CountryCode, CountryName, OrderNo, ShortedCode
---FROM Affiliate_12B.dbo.TargetCountry WITH(NOLOCK)
 
 
 
@@ -338,17 +344,17 @@ GO
 
 
 GO
-DROP TABLE IF EXISTS  [dbo].[OH_User]
-CREATE TABLE [dbo].[OH_User](
-	[UserId] [int],
-	[UserName] [varchar](30) NULL
+--DROP TABLE IF EXISTS  [dbo].[OH_User]
+--CREATE TABLE [dbo].[OH_User](
+--	[UserId] [int],
+--	[UserName] [varchar](30) NULL
 
- CONSTRAINT [PK_OH_User] PRIMARY KEY CLUSTERED 
-(
-	[UserId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
-) ON [Setting_Data]
-GO
+-- CONSTRAINT [PK_OH_User] PRIMARY KEY CLUSTERED 
+--(
+--	[UserId] ASC
+--)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+--) ON [Setting_Data]
+--GO
 
 DROP TABLE IF EXISTS  [dbo].[SystemSettings]
 CREATE TABLE [dbo].[SystemSettings](
@@ -362,63 +368,5 @@ CREATE TABLE [dbo].[SystemSettings](
 ) ON [Setting_Data]
 GO
 
---DROP TABLE IF EXISTS  [dbo].[ExchangeOanda]
---CREATE TABLE [dbo].[ExchangeOanda](
---	[ExchangeDate] [smalldatetime] NOT NULL,
---	[ExchangeId] [int] NOT NULL,
---	[Code] [varchar](5) NULL,
---	[ActualRate] [float] NULL,
---	[VND] [float] NULL,
---	[EUR] [float] NULL,
---	[USD] [float] NULL,
---	[CNY] [float] NULL,
---	[MYR] [float] NULL,
---	[THB] [float] NULL,
---	[IDR] [float] NULL,
---	[BDT] [float] NULL,
---	[INR] [float] NULL,
--- CONSTRAINT [PK_ExchangeOanda] PRIMARY KEY CLUSTERED 
---(
---	[ExchangeDate] ASC,
---	[ExchangeId] ASC
---)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
---) ON [Setting_Data]
---GO
-
-
---DROP TABLE IF EXISTS  [dbo].[MemberInfo]
---CREATE TABLE [dbo].[MemberInfo](
---	[CustId] [int] NOT NULL,
---	[UserName] [varchar](30) NOT NULL,
---	[FirstName] [nvarchar](50) NULL,
---	[LastName] [nvarchar](50) NULL,
---	[Email] [nvarchar](50) NULL,
---	[Currency] [int] NULL,
---	[ActStatus] [tinyint] NULL,
---	[Status] [tinyint] NULL,
---	[RegisteredDate] [datetime] NULL,
---	[IDCode] [varchar](20) NOT NULL,
---	[IBCCustId] [int] NULL,
---	[IBCUserName] [varchar](30) NULL,
---	[CreatedDate] [datetime] NULL,
---	[IsRemoved] [bit] NULL,
---	[Recommend] [int] NULL,
---	[ClickId] [bigint] NULL,
---	[FirstDepositDate] [datetime] NULL,
---	[FirstDepositAmount] [money] NULL,
---	[AffMediaLinkId] [int] NULL,
---	[TagList] [nvarchar](max) NULL,
--- CONSTRAINT [PK_MemberInfo] PRIMARY KEY CLUSTERED 
---(
---	[CustId] ASC
---)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Report_Data]
---) ON [Report_Data] TEXTIMAGE_ON [Report_Data]
---GO
-
---ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_IsRemoved]  DEFAULT ((0)) FOR [IsRemoved]
---GO
-
---ALTER TABLE [dbo].[MemberInfo] ADD  CONSTRAINT [DF_MemberInfo_ClickId]  DEFAULT ((0)) FOR [ClickId]
---GO
 
 
