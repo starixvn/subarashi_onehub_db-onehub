@@ -116,14 +116,14 @@ BEGIN
      -- Validate that IDCode exists in IDCode table
     IF NOT EXISTS (SELECT TOP 1 1 FROM dbo.IDCode WITH (NOLOCK) WHERE IDCode = @IDCode)
     BEGIN
-        SELECT @ErrCode = 1004, @ErrMsg = N'IDCode does not exist.';
+        SELECT @ErrCode = 1004, @ErrMsg = N'The code you entered wasn''t found. Please verify or leave it empty to auto-generate a new one.';
         RETURN;
     END    
 
     -- Check for duplicate DomainName
     IF EXISTS (SELECT TOP 1 1 FROM dbo.LinkGenerator WITH (NOLOCK) WHERE DomainName = @DomainName AND StatusID = 1)
     BEGIN
-        SELECT @ErrCode = 1005, @ErrMsg = N'This Domain Name already has an active link. You can not generate a new one until the existing link is inactive.';
+        SELECT @ErrCode = 1005, @ErrMsg = N'This Domain Name already has an active link. You can''t generate a new one until the existing link is inactive.';
         RETURN;
     END
     
@@ -168,7 +168,7 @@ BEGIN
                 )
         )
         BEGIN
-            SELECT @ErrCode = 1007, @ErrMsg = N'Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one.';
+            SELECT @ErrCode = 1007, @ErrMsg = N'Domain Name not available. The domain score has changed or it has been marked as used. Please choose another one.';
             RETURN;
         END
     END
@@ -213,7 +213,7 @@ BEGIN
                 AND d.Note = ''
         )
         BEGIN
-            SELECT @ErrCode = 1009, @ErrMsg = N'Short Domain Name not available. The score of domain has changed or it has been marked as used. Please choose another one';
+            SELECT @ErrCode = 1009, @ErrMsg = N'Short Domain Name not available. The domain score has changed or it has been marked as used. Please choose another one';
             RETURN;
         END
         
