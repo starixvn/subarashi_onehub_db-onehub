@@ -56,7 +56,7 @@ BEGIN
                     AND d1.SiteId = @SiteId
                     AND d1.Note = ''
             )
-        ORDER BY d.Id ASC;
+        ORDER BY dd.Score ASC;
     END
     ELSE
     BEGIN
@@ -76,7 +76,7 @@ BEGIN
         WHERE d.SiteId = @SiteId 
             AND d.DomainType = @DomainType
             AND d.Note = ''
-        ORDER BY d.Id ASC;
+        ORDER BY dd.Score ASC;
     END
 END;
 GO
