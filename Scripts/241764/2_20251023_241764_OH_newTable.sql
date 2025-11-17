@@ -298,7 +298,8 @@ CREATE TABLE [dbo].[Market](
 ) ON [Setting_Data]
 GO
 
-ALTER TABLE [dbo].[Market] ADD  DEFAULT ((0)) FOR [IsDeleted]
+ALTER TABLE [dbo].[Market] ADD  CONSTRAINT [DF_Market_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
+
 GO
 
 DROP TABLE IF EXISTS Country
@@ -344,17 +345,17 @@ GO
 
 
 GO
---DROP TABLE IF EXISTS  [dbo].[OH_User]
---CREATE TABLE [dbo].[OH_User](
---	[UserId] [int],
---	[UserName] [varchar](30) NULL
+DROP TABLE IF EXISTS  [dbo].[OH_User]
+CREATE TABLE [dbo].[OH_User](
+	[UserId] [int],
+	[UserName] [varchar](30) NULL
 
--- CONSTRAINT [PK_OH_User] PRIMARY KEY CLUSTERED 
---(
---	[UserId] ASC
---)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
---) ON [Setting_Data]
---GO
+ CONSTRAINT [PK_OH_User] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [Setting_Data]
+) ON [Setting_Data]
+GO
 
 DROP TABLE IF EXISTS  [dbo].[SystemSettings]
 CREATE TABLE [dbo].[SystemSettings](

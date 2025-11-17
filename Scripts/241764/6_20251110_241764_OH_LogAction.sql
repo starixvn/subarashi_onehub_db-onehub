@@ -5,9 +5,6 @@
     Task: Insert Log Actions for stored procedures [RedmineId : #241764]
 */
  
-USE ONEHub;
-GO
-
 USE [ONEHub]
 GO
 
@@ -390,5 +387,5 @@ INSERT [dbo].[LogAction] ([ActionId], [ActionTypeId], [SPName], [Items], [Action
   ]
 }', N'Domain update')
 GO
-INSERT [dbo].[LogType] ([TypeId], [TypeName], [Description]) VALUES (1, N'LandingPage', N'Landing Page Builder Management')
-GO
+
+
