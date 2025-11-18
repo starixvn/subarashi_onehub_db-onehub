@@ -22,7 +22,7 @@ BEGIN
 		SELECT  pb.PageCode, 
 				pb.PageName, 
 				'Mobile' Category, 				
-				3 AS LandingPageType,
+				3 AS PageType,
 				pb.TargetCountryCode,
 				pb.MarketId,
 				pb.CampaignId,
@@ -34,7 +34,7 @@ BEGIN
 		SELECT 	ComponentCode AS PageCode, 
 				ComponentName AS PageName, 
 				CASE WHEN CategoryType = 1 THEN 'Mobile' ELSE 'Mobile & Desktop' END Category, 
-				CASE WHEN CategoryType = 1 THEN 2 ELSE 1 END AS LandingPageType,
+				CASE WHEN CategoryType = 1 THEN 2 ELSE 1 END AS PageType,
 				'' AS TargetCountryCode,
 				'' AS MarketId,
 				'' AS CampaignId,
@@ -43,7 +43,7 @@ BEGIN
 		WHERE 	ComponentTypeId = 6
 				AND StatusId = 1
 	)
-	SELECT PageCode, PageName, Category, LandingPageType, TargetCountryCode, MarketId, CampaignId, CampaignCode
+	SELECT PageCode, PageName, Category, PageType, TargetCountryCode, MarketId, CampaignId, CampaignCode
 	FROM t
 	ORDER BY Category ASC, PageName ASC
 END
