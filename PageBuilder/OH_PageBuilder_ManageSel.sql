@@ -1,7 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_PageBuilder_ManageSel]
-	@CampaignName VARCHAR(200) = '', -- Search in both CampaignName and CampaignCode
-	@PageName VARCHAR(200) = '', -- Search in both PageName and PageCode
+	@Search			VARCHAR(500)  = '',
 	@TargetCountryCodes VARCHAR(500) = '',
 	@MarketIds VARCHAR(500) = '',
 	@StatusIds VARCHAR(500) = '',
@@ -80,14 +79,11 @@ BEGIN
 	LEFT JOIN dbo.OH_User u1 WITH (NOLOCK) ON u1.UserId = b.Creator
 	LEFT JOIN dbo.OH_User u2 WITH (NOLOCK) ON u2.UserId = b.UpdatedBy
 	WHERE
-		(@CampaignName = '' 
-			OR c.CampaignName LIKE '%' + @CampaignName + '%'
-			OR c.CampaignCode LIKE '%' + @CampaignName + '%'
-		)
-		AND (
-			@PageName = ''
-			OR b.PageName LIKE '%' + @PageName + '%'
-			OR b.PageCode LIKE '%' + @PageName + '%'
+		(@Search = '' 
+			OR c.CampaignName LIKE '%' + @Search + '%'
+			OR c.CampaignCode LIKE '%' + @Search + '%'
+			OR b.PageName LIKE '%' + @Search + '%'
+			OR b.PageCode LIKE '%' + @Search + '%'
 		)
 		AND (
 			@TargetCountryCodes = ''
