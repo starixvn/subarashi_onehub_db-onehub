@@ -1,6 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 
-CREATE PROCEDURE [dbo].[OH_API_PushDataTracker_Upd]
+CREATE PROCEDURE [dbo].[Task_API_PushDataTracker_Upd]
 	@PushTrackerId BIGINT
 	,@StatusId	TINYINT = 2
 	,@ErrCode	INT = 0 OUTPUT

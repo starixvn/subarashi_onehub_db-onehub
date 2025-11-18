@@ -1,6 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 
-CREATE PROCEDURE [dbo].[OH_API_PushDataTracker_Import]
+CREATE PROCEDURE [dbo].[Task_API_PushDataTracker_Import]
 	@PushDataType	SMALLINT
 	,@PushDataInfo	NVARCHAR(MAX) = ''
 	,@ErrCode		INT = 0 OUTPUT

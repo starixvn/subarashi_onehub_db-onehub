@@ -1,3 +1,4 @@
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER  PROCEDURE [dbo].[OH_Domain_Ins]
     @Data NVARCHAR(MAX),
     @DomainType TINYINT,
