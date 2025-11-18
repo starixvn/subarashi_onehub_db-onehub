@@ -1,0 +1,137 @@
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
+CREATE PROCEDURE [dbo].[OH_Component_Upd]
+    @UserId          INT,
+    @ComponentId     INT,
+    @ComponentName   VARCHAR(200) = NULL,
+    @ComponentTypeId INT,
+    @StatusId        TINYINT = NULL,
+	@DeviceId		 INT = NULL,
+    @IP             VARCHAR(50) = '',
+    @ErrCode        INT = 0 OUTPUT,
+    @ErrMsg         NVARCHAR(4000) = '' OUTPUT
+AS
+/*
+    Created: 20250929@Sophia
+    DB: DBAFF12B-Affiliate_12B
+    Task: Update Landing Page Component
+    
+    Revisions:
+        - 20250929@Sophia: Initial version [RedmineID: #239988]
+
+    Param's Explanation:
+        - @ComponentName:
+            + NULL   : no change will be made to the existing value
+            + ''     : sets the value to an empty string
+            + 'abc'  : updates the field with the provided input
+        - @StatusId:
+            + NULL   : no change will be made to the existing value
+            + 0      : Inactive
+            + 1      : Active
+*/
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @CurrentDate  DATETIME
+          , @StartTime    DATETIME = GETDATE()
+          , @EndTime      DATETIME
+          , @Duration     INT
+          , @SPName       VARCHAR(200) = OBJECT_NAME(@@PROCID)
+          , @OldData      NVARCHAR(MAX)
+          , @NewData      NVARCHAR(MAX);
+
+    -- Validate input
+    BEGIN
+        SELECT @ComponentName = LTRIM(RTRIM(@ComponentName));
+
+        IF @ComponentName = ''
+        BEGIN
+            SELECT @ErrCode = 1001
+                 , @ErrMsg = N'Component Name is required.';
+            RETURN;
+        END
+
+        IF EXISTS (
+            SELECT 1 
+            FROM dbo.Component WITH (NOLOCK)
+            WHERE ComponentName = @ComponentName 
+            AND ComponentId <> @ComponentId
+            AND ComponentTypeId = ISNULL(@ComponentTypeId, ComponentTypeId)
+        )
+        BEGIN
+            SELECT @ErrCode = 1002
+                 , @ErrMsg = N'Component Name already exists.';
+            RETURN;
+        END
+
+        IF @ComponentTypeId IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM dbo.ComponentType WITH (NOLOCK)
+            WHERE ComponentTypeId = @ComponentTypeId
+        )
+        BEGIN
+            SELECT @ErrCode = 1005
+                 , @ErrMsg = N'Invalid Component Type.';
+            RETURN;
+        END
+    END
+
+    -- Old data for writing log
+    SELECT @OldData = (
+        SELECT c.ComponentId AS 'ci'
+              ,c.ComponentCode AS 'cc'
+              ,c.ComponentName AS 'cn'
+              ,c.ComponentTypeId AS 'ct'
+              ,c.StatusId AS 'st'
+        FROM dbo.Component c WITH (NOLOCK)
+        WHERE c.ComponentId = @ComponentId
+        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
+    );
+
+	DECLARE @TimeZone TINYINT
+	SELECT @TimeZone = CONVERT(TINYINT, SValue)
+	FROM dbo.SystemSettings WITH (NOLOCK)
+	WHERE SName = 'TimeZone';
+    SELECT @CurrentDate = DATEADD(HOUR, @TimeZone, GETUTCDATE());
+
+    BEGIN TRY
+        UPDATE c WITH (ROWLOCK, UPDLOCK)
+        SET c.ComponentName   = ISNULL(@ComponentName, c.ComponentName)
+           ,c.ComponentTypeId = ISNULL(@ComponentTypeId, c.ComponentTypeId)
+           ,c.StatusId       = ISNULL(@StatusId, c.StatusId)
+           ,c.UpdatedBy      = @UserId
+           ,c.UpdatedDate    = @CurrentDate
+		   ,c.CategoryType	 = @DeviceId
+        FROM dbo.Component c
+        WHERE c.ComponentId = @ComponentId;
+
+    END TRY
+    BEGIN CATCH
+        SELECT @ErrCode = 1011
+             , @ErrMsg = N'Error occurs. Update unsuccessfully.';
+        RETURN;
+    END CATCH
+
+    -- Write log
+    SELECT @EndTime = GETDATE();
+    SELECT @Duration = DATEDIFF(SECOND, @StartTime, @EndTime);
+
+    SELECT @NewData = (
+        SELECT c.ComponentId AS 'ci'
+              ,c.ComponentCode AS 'cc'
+              ,c.ComponentName AS 'cn'
+              ,c.ComponentTypeId AS 'ct'
+              ,c.StatusId AS 'st'
+        FROM dbo.Component c WITH (NOLOCK)
+        WHERE c.ComponentId = @ComponentId
+        FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
+    );
+
+    EXEC dbo.OH_UserLog_RunSP_Detail_WriteLog
+        @UserId    = @UserId
+        ,@SPName   = @SPName
+        ,@OldData  = @OldData
+        ,@NewData  = @NewData
+        ,@IP       = @IP
+        ,@Duration = @Duration;
+END

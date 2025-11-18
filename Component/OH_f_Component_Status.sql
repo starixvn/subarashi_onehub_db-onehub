@@ -1,0 +1,20 @@
+/*<info serverAlias="DBOH-ONEHub" selecters="wsv_oh" isFunction="1" isNested="0"></info>*/
+CREATE FUNCTION [dbo].[OH_f_Component_Status]()
+RETURNS TABLE
+/*
+    Created: 20250929@Sophia
+    DB: DBAFF12B-Affiliate_12B
+    Task: Table-valued function for Component Status
+    Revisions:
+        - 20250929@Sophia: Initial version [RedmineID: #239988]
+*/
+AS
+RETURN
+(
+    SELECT StatusId, Status
+    FROM (
+        VALUES  (1, 'Active'),
+                (2, 'Inactive')
+    ) AS StatusTable(StatusId, Status)
+)
+GO
