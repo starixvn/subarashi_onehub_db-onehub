@@ -87,7 +87,6 @@ BEGIN
     SELECT @OldData = ISNULL((
         SELECT 
             ISNULL(d.DomainName, '') AS 'dmn',
-            ISNULL(d.DomainType, 0) AS 'dt',
             ISNULL(d.Note, '') AS 'nt',
             ISNULL(d.SiteId, 0) AS 'sid',
             CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'cd'
@@ -100,14 +99,12 @@ BEGIN
     UPDATE dbo.Domain WITH (ROWLOCK)
     SET Note = @Note
     WHERE DomainName = @DomainName
-      AND DomainType = @DomainType
       AND SiteId = @SiteId;
 
     -- Capture new data after update
     SELECT @NewData = ISNULL((
         SELECT 
             ISNULL(d.DomainName, '') AS 'dmn',
-            ISNULL(d.DomainType, 0) AS 'dt',
             ISNULL(d.Note, '') AS 'nt',
             ISNULL(d.SiteId, 0) AS 'sid',
             CONVERT(VARCHAR(23), d.CreatedDate, 121) AS 'cd'
