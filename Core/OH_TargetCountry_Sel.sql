@@ -27,7 +27,7 @@ BEGIN
 		FROM TargetCountry tc WITH (NOLOCK)
 			LEFT JOIN dbo.TargetCountry tc1 WITH (NOLOCK) ON tc1.CountryCode = tc.CountryCode
 			INNER JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = tc.MarketId
-			LEFT JOIN dbo.Aff_f_GetTargetLanguageCode() tl ON m.ShortedCode = tl.ShortedCode
+			LEFT JOIN dbo.OH_f_GetTargetLanguageCode() tl ON m.ShortedCode = tl.ShortedCode
 		WHERE m.IsDeleted = 0
 			AND tc1.OrderNo IS NOT NULL
 			AND (
