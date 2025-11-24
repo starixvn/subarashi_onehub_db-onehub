@@ -3,69 +3,9 @@
     Created: 20251030
     DB: DBOH-ONEHub
     Task: Create Domain Management Tables [RedmineId : #241764]
-        - Create Domain table with identity primary key
-        - Create DomainDetail table with country scoring
-        - Create DomainLog table for domain booking tracking
+         
 */
 
-
-
-SET ANSI_NULLS ON;
-SET QUOTED_IDENTIFIER ON;
-SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
-USE ONEHub;
-GO
-
-
--- 1. Drop & Create Domain Table
-IF EXISTS (SELECT TOP 1 1  FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Domain]') AND type IN (N'U'))
-BEGIN
-    DROP TABLE [dbo].[Domain];
-END
-GO
-
-CREATE TABLE Domain (
-    Id INT IDENTITY(1,1) NOT NULL,
-    DomainName VARCHAR(200) NOT NULL,
-    DomainType TINYINT NULL,
-    Note NVARCHAR(200) NULL,
-    CreatedDate DATETIME NOT NULL,
-    SiteId SMALLINT NULL,
-    CONSTRAINT PK_Domain PRIMARY KEY NONCLUSTERED (Id)
-) 
-ON [SETTING_DATA];
-
--- Create UNIQUE clustered index on DomainName for performance & uniqueness
-CREATE UNIQUE CLUSTERED INDEX IX_Domain_DomainName 
-ON Domain (DomainName);
-
--- 2. Drop & Create DomainDetail Table  
-IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[DomainDetail]') AND type IN (N'U'))
-BEGIN
-    DROP TABLE [dbo].[DomainDetail];
-END
-GO
-
-CREATE TABLE DomainDetail (
-    Id INT IDENTITY(1,1) NOT NULL,
-    DomainName VARCHAR(200) NOT NULL,
-    CountryCode VARCHAR(20) NOT NULL,
-    Score SMALLINT NULL,
-    DomainType TINYINT NULL,
-    SiteId SMALLINT NULL,
-    CONSTRAINT PK_DomainDetail PRIMARY KEY NONCLUSTERED (Id)
-) 
-ON [SETTING_DATA];
-
--- Create indexes for performance
-CREATE CLUSTERED INDEX IX_DomainDetail_DomainName 
-ON DomainDetail (DomainName);
-
-CREATE NONCLUSTERED INDEX IX_DomainDetail_Country 
-ON DomainDetail (CountryCode);
-
- 
 -- 4. Drop & Create LinkGenerator Table
 IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[LinkGenerator]') AND type IN (N'U'))
 BEGIN
