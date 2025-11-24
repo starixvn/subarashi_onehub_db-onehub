@@ -54,6 +54,16 @@ BEGIN
 		FROM STRING_SPLIT(@ChannelIds, ',');
 	END
 	
+	DROP TABLE IF EXISTS #data_Statistics
+	CREATE TABLE #data_Statistics
+	(
+		[LinkID]		[int] NULL,
+		[UniqueClick]   [int] NULL,
+		[FTD]			[MONEY] NULL,
+		[Avg_FTD]		[MONEY] NULL,
+		[Bonus]			[int] NULL,
+		[Registration]  [int] NULL
+	)
 	
     DROP TABLE IF EXISTS #data;
     CREATE TABLE #data
@@ -149,9 +159,29 @@ BEGIN
 		OR  ISNULL(@Search, '') = ''
 	)
 	AND l.CreatedDate BETWEEN @StartDate AND DATEADD(DAY,1,@EndDate)
-	AND EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = l.StatusId);
+	AND ( EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = l.StatusId) OR ISNULL(@StatusIds, '') = '' );
 
-	
+
+	INSERT INTO #data_Statistics (LinkID, UniqueClick, FTD, Avg_FTD, Bonus, Registration)
+	SELECT d.LinkID, x.UniqueClick, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
+	FROM #data d
+	CROSS APPLY (
+		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
+		       SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END) AS FTD,
+			   CASE WHEN SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
+			   
+			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
+			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END  AS Avg_FTD,
+			   SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
+			  SUM(CASE WHEN m.ClickId IS NOT NULL THEN 1 ELSE 0 END) Registration
+		FROM ClickStatistics c WITH(NOLOCK) 
+		LEFT JOIN  MemberInfo m WITH(NOLOCK) ON c.ClickId = m.ClickId AND m.IsRemoved = 0
+		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
+		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		OUTER APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
+		WHERE c.LinkId = d.LinkId AND c.Date >= d.CreatedDate
+	) x
+
 
 	-- Get total row count
     SELECT @NRows = COUNT(*) FROM #data;
@@ -172,7 +202,7 @@ BEGIN
     END
 	
 	SELECT RowIdx
-		    ,LinkId
+		    ,d.LinkId
 		   ,LinkName
 	       ,DomainName
 	       ,ShortDomain + '/' +  ShortPath AS ShortLink
@@ -181,14 +211,14 @@ BEGIN
 	       ,ChannelName
 	       ,IDCode
 		   ,d.CreatedDate
-		   ,0 AS Click
-		   ,0 AS Registration
-	       ,0 AS FTD
-	       ,0 AS Avg_FTD
+		   ,ISNULL(df.UniqueClick,0) AS Click
+		   ,ISNULL(df.Registration,0) AS Registration
+	       ,ISNULL(df.FTD,0) AS FTD
+	       ,ISNULL(df.Avg_FTD,0) AS Avg_FTD
 		   ,d.StatusId
 		   ,CASE WHEN d.StatusId = 1 THEN 'Active' ELSE 'Inactive' END StatusName
 		   ,FullLink
-		   , 0 AS Bonus
+		   , df.Bonus AS Bonus
 		   , x.Event 
 		   ,CASE WHEN d.PageType IN (1,2) THEN l.LandingPage ELSE p.LandingPage END LandingPage
 		   ,g.ComponentName [Group]
@@ -197,6 +227,7 @@ BEGIN
 		   ,md.ComponentName Type
 		   ,d.Note
 	FROM #data d
+	LEFT JOIN #data_Statistics df ON d.LinkId = df.LinkId
 	LEFT JOIN Market m WITH(NOLOCK) ON d.MarketId = m.MarketId
 	LEFT JOIN Component g WITH(NOLOCK) ON g.ComponentId = d.GroupId
 	LEFT JOIN Component a WITH(NOLOCK) ON a.ComponentId = d.AgencyId
@@ -219,6 +250,26 @@ BEGIN
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY RowIdx ASC;
 
+
+	DECLARE @TotalClicks INT, @TotalRegistrations INT, @TotalFTDs MONEY, @AvgFTDs MONEY, @Bonus INT, @TotalLinks INT
+
+	SELECT @TotalLinks = COUNT(1) FROM #data
+
+	SELECT  @TotalClicks = SUM(UniqueClick),
+		  @TotalRegistrations = SUM(Registration),
+		  @TotalFTDs = SUM(FTD),
+		  @AvgFTDs = SUM(Avg_FTD),
+		  @Bonus= SUM(Bonus)
+	FROM #data_Statistics
+
+	SELECT @TotalLinks AS TotalLinks,
+		  ISNULL(@TotalClicks,0) AS TotalClicks,
+		  ISNULL(@TotalRegistrations,0) AS TotalRegistrations,
+		  ISNULL(@TotalFTDs,0) AS TotalFTDs,
+		  ISNULL(@AvgFTDs,0) AS AvgFTDs,
+		  ISNULL(@Bonus,0) AS Bonus
+
 	DROP TABLE #data;
 END
+
 

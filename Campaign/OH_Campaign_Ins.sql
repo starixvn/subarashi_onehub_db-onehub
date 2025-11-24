@@ -1,11 +1,12 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[OH_Campaign_Ins]
+ALTER PROCEDURE [dbo].[OH_Campaign_Ins]
 	@UserId   	    INT
 	,@CampaignName	VARCHAR(500)
 	,@Description	VARCHAR(500) = ''
 	,@StatusId		TINYINT = 0 -- Draft
 	,@IP 			VARCHAR(50) = ''
 	,@CampaignId    INT = 0 OUTPUT
+	,@CampaignCode   VARCHAR(100) = '' OUTPUT
 	,@ErrCode 		INT = 0 OUTPUT
 	,@ErrMsg  		NVARCHAR(4000) = '' OUTPUT
 AS
@@ -27,7 +28,6 @@ BEGIN
 	DECLARE @CurrentDate 	DATETIME
 		  , @Status 		NVARCHAR(50)
 		  , @NewCampaignId  INT
-		  , @CampaignCode   VARCHAR(100)
 		  , @StartTime 	 	DATETIME = GETDATE()
 		  , @EndTime 	 	DATETIME
 		  , @Duration 		INT
@@ -73,10 +73,10 @@ BEGIN
 		
 		SELECT @NewCampaignId = SCOPE_IDENTITY();
 		SET @CampaignId = @NewCampaignId; -- Set output parameter
+		SET @CampaignCode =CONCAT('CAM_', FORMAT(@CurrentDate, 'yyyyMMdd'), '_', @NewCampaignId); -- Set output parameter
 		
 		UPDATE cp WITH (ROWLOCK, UPDLOCK)
-		SET CampaignCode = CONCAT('CAM_', FORMAT(@CurrentDate, 'yyyyMMdd'), '_', @NewCampaignId),
-			@CampaignCode = CampaignCode
+		SET CampaignCode = @CampaignCode
 		FROM dbo.Campaign cp
 		WHERE CampaignId = @NewCampaignId;
 		

@@ -44,7 +44,6 @@ BEGIN
 		FROM STRING_SPLIT(@ChannelIds, ',');
 	END
 	
-
 	SELECT  COUNT(1) AS TotalLinks ,
 			FLOOR(RAND() * 100000) + 1 AS TotalClicks,
 			FLOOR(RAND() * 20000) + 1 AS TotalRegistrations,
@@ -62,6 +61,8 @@ BEGIN
 		OR  ISNULL(@Search, '') = ''
 	)
 	AND l.CreatedDate BETWEEN @StartDate AND DATEADD(DAY,1,@EndDate)
-	AND EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = l.StatusId);
+	AND ( EXISTS(SELECT 1 FROM @Status s WHERE s.StatusId = l.StatusId)  OR ISNULL(@StatusIds, '') = '' );
 
 END
+
+
