@@ -155,5 +155,12 @@ BEGIN
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY RowIdx ASC;
 
+	SELECT COUNT(*) AS TotalCampaigns
+          ,SUM(CASE WHEN StatusId = 0 THEN 1 ELSE 0 END) AS DraftCampaigns
+          ,SUM(CASE WHEN StatusId = 1 THEN 1 ELSE 0 END) AS ActiveCampaigns
+          ,SUM(CASE WHEN StatusId = 2 THEN 1 ELSE 0 END) AS PausedCampaigns
+          ,SUM(CASE WHEN StatusId = 3 THEN 1 ELSE 0 END) AS InactiveCampaigns
+	FROM #data;
+
 	DROP TABLE #data;
 END

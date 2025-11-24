@@ -46,6 +46,23 @@ BEGIN
         RowIdx INT
     );
 
+	DROP TABLE IF EXISTS #data_Uniqueclick 
+	CREATE TABLE #data_Uniqueclick
+	(
+		[PageCode]		VARCHAR(100) NULL,
+		[UniqueClick]   [int] NULL,
+	)
+
+	DROP TABLE IF EXISTS #data_FTDInfo 
+	CREATE TABLE #data_FTDInfo
+	(
+		[PageCode]		VARCHAR(100) NULL,
+		[FTD]			[MONEY] NULL,
+		[Avg_FTD]		[MONEY] NULL,
+		[Bonus]			[int] NULL,
+		[Registration]  [int] NULL
+	)
+
     INSERT INTO #Data (
         CampaignCode, CampaignName, PageName, PageCode, 
         TargetCountryCode, TargetCountryName, MarketId, Language, TargetLanguageCode,
@@ -111,6 +128,34 @@ BEGIN
 		)
 		AND b.CreatedDate BETWEEN @FromDate AND DATEADD(DAY,1, @ToDate);
 
+
+	INSERT INTO #data_Uniqueclick (PageCode, UniqueClick)
+	SELECT d.PageCode, x.UniqueClick
+	FROM #data d
+	CROSS APPLY (
+		SELECT COUNT(DISTINCT c.IP) AS UniqueClick
+		FROM LinkGenerator l WITH(NOLOCK)
+		INNER JOIN ClickStatistics c WITH(NOLOCK) ON l.LinkId = c.LinkId
+		WHERE l.PageCode = d.PageCode AND c.Date >= l.CreatedDate
+	) x
+
+	INSERT INTO #data_FTDInfo (PageCode, FTD, Avg_FTD, Bonus, Registration)
+	SELECT d.PageCode, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
+	FROM #data d
+	CROSS APPLY (
+		SELECT	SUM(FirstDepositAmount * ISNULL(ex.Rate, 0)) AS FTD , 
+				SUM(FirstDepositAmount * ISNULL(ex.Rate, 0)) / COUNT(1) AS Avg_FTD, 
+				SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
+				COUNT(1) AS Registration
+		FROM MemberInfo m WITH(NOLOCK)
+		INNER JOIN LinkGenerator lg WITH(NOLOCK) ON m.IDCode = lg.IDCode
+		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
+		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		CROSS APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
+		WHERE lg.PageCode = d.PageCode AND m.IsRemoved = 0 AND m.RegDate >= lg.CreatedDate
+	) x
+
+
     -- Get total row count
     SELECT @NRows = COUNT(*) FROM #Data;
     
@@ -133,7 +178,7 @@ BEGIN
         CampaignCode,
         CampaignName,
         PageName,
-        PageCode,
+        d.PageCode,
         TargetCountryCode,
         TargetCountryName,
         MarketId,
@@ -147,13 +192,23 @@ BEGIN
         Status,
         PageId,
         RowIdx,
-		0 AS Click,
-		0 AS Registration,
-		0 AS FTD,
-		0 AS Revenue
-    FROM #Data
+		ISNULL(du.UniqueClick,0) AS Click,
+		ISNULL(df.Registration,0) AS Registration,
+		ISNULL(df.FTD,0) AS FTD,
+		ISNULL(df.Avg_FTD,0) AS Avg_FTD,
+		ISNULL(df.Bonus,0) AS Bonus
+
+    FROM #Data d
+	LEFT JOIN #data_Uniqueclick du ON d.PageCode = du.PageCode
+	LEFT JOIN #data_FTDInfo df ON d.PageCode = df.PageCode
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY PageId DESC;
+
+	SELECT COUNT(*) AS TotalPageBuilders
+          ,SUM(CASE WHEN p.StatusId = 0 THEN 1 ELSE 0 END) AS DraftPageBuilders
+          ,SUM(CASE WHEN p.StatusId = 1 THEN 1 ELSE 0 END) AS ActivePageBuilders
+          ,SUM(CASE WHEN p.StatusId = 2 THEN 1 ELSE 0 END) AS InactivePageBuilders
+	FROM #Data p
     
     DROP TABLE #Data;
 END;
