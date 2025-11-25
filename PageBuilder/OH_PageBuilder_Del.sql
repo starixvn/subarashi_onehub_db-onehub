@@ -69,7 +69,7 @@ BEGIN
 		LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 		LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND tc.MarketId = b.MarketId
 		LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON c.CampaignId = b.CampaignId
-		LEFT JOIN dbo.OH_f_LandingPage_Status() s ON s.StatusId = b.StatusId
+		LEFT JOIN dbo.OH_f_PageBuilder_Status() s ON s.StatusId = b.StatusId
 		WHERE EXISTS (SELECT TOP 1 1 FROM @PageId_Tab pt WHERE pt.PageId = b.PageId)
 		FOR JSON PATH
 	)

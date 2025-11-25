@@ -46,16 +46,10 @@ BEGIN
         RowIdx INT
     );
 
-	DROP TABLE IF EXISTS #data_Uniqueclick 
-	CREATE TABLE #data_Uniqueclick
+	DROP TABLE IF EXISTS #data_Statistics
+	CREATE TABLE #data_Statistics
 	(
-		[PageCode]		VARCHAR(100) NULL,
 		[UniqueClick]   [int] NULL,
-	)
-
-	DROP TABLE IF EXISTS #data_FTDInfo 
-	CREATE TABLE #data_FTDInfo
-	(
 		[PageCode]		VARCHAR(100) NULL,
 		[FTD]			[MONEY] NULL,
 		[Avg_FTD]		[MONEY] NULL,
@@ -91,7 +85,7 @@ BEGIN
 	LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND b.MarketId = tc.MarketId
 	LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 	LEFT JOIN dbo.OH_f_GetTargetLanguageCode() lcm ON m.ShortedCode = lcm.ShortedCode
-	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON b.StatusId = s.StatusId
+	LEFT JOIN dbo.OH_f_PageBuilder_Status() s ON b.StatusId = s.StatusId
 	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON b.CampaignId = c.CampaignId
 	LEFT JOIN dbo.OH_User u1 WITH (NOLOCK) ON u1.UserId = b.Creator
 	LEFT JOIN dbo.OH_User u2 WITH (NOLOCK) ON u2.UserId = b.UpdatedBy
@@ -129,32 +123,25 @@ BEGIN
 		AND b.CreatedDate BETWEEN @FromDate AND DATEADD(DAY,1, @ToDate);
 
 
-	INSERT INTO #data_Uniqueclick (PageCode, UniqueClick)
-	SELECT d.PageCode, x.UniqueClick
+	INSERT INTO #data_Statistics (PageCode, UniqueClick, FTD, Avg_FTD, Bonus, Registration)
+	SELECT d.PageCode, x.UniqueClick, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
 	FROM #data d
 	CROSS APPLY (
-		SELECT COUNT(DISTINCT c.IP) AS UniqueClick
+		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
+		       SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END) AS FTD,
+			   CASE WHEN  SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
+			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
+			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END AS Avg_FTD,
+			   SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
+			  SUM(CASE WHEN m.ClickId IS NOT NULL THEN 1 ELSE 0 END) Registration
 		FROM LinkGenerator l WITH(NOLOCK)
 		INNER JOIN ClickStatistics c WITH(NOLOCK) ON l.LinkId = c.LinkId
-		WHERE l.PageCode = d.PageCode AND c.Date >= l.CreatedDate
-	) x
-
-	INSERT INTO #data_FTDInfo (PageCode, FTD, Avg_FTD, Bonus, Registration)
-	SELECT d.PageCode, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
-	FROM #data d
-	CROSS APPLY (
-		SELECT	SUM(FirstDepositAmount * ISNULL(ex.Rate, 0)) AS FTD , 
-				SUM(FirstDepositAmount * ISNULL(ex.Rate, 0)) / COUNT(1) AS Avg_FTD, 
-				SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
-				COUNT(1) AS Registration
-		FROM MemberInfo m WITH(NOLOCK)
-		INNER JOIN LinkGenerator lg WITH(NOLOCK) ON m.IDCode = lg.IDCode
+		LEFT JOIN  MemberInfo m WITH(NOLOCK) ON c.ClickId = m.ClickId AND m.IsRemoved = 0
 		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
 		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
-		CROSS APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
-		WHERE lg.PageCode = d.PageCode AND m.IsRemoved = 0 AND m.RegDate >= lg.CreatedDate
+		OUTER APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
+		WHERE l.PageCode = d.PageCode AND c.Date >= l.CreatedDate
 	) x
-
 
     -- Get total row count
     SELECT @NRows = COUNT(*) FROM #Data;
@@ -192,15 +179,14 @@ BEGIN
         Status,
         PageId,
         RowIdx,
-		ISNULL(du.UniqueClick,0) AS Click,
+		ISNULL(df.UniqueClick,0) AS Click,
 		ISNULL(df.Registration,0) AS Registration,
 		ISNULL(df.FTD,0) AS FTD,
 		ISNULL(df.Avg_FTD,0) AS Avg_FTD,
 		ISNULL(df.Bonus,0) AS Bonus
 
     FROM #Data d
-	LEFT JOIN #data_Uniqueclick du ON d.PageCode = du.PageCode
-	LEFT JOIN #data_FTDInfo df ON d.PageCode = df.PageCode
+	LEFT JOIN #data_Statistics df ON d.PageCode = df.PageCode
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY PageId DESC;
 

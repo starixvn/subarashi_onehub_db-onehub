@@ -67,12 +67,6 @@ BEGIN
 		ExtraInfo VARCHAR(8000)
 	);
 
-	-- Get PageId from LandingPage table for validation and update
-	DECLARE @LandingPageId INT;		
-	SELECT @LandingPageId = PageId
-	FROM dbo.LandingPage WITH (NOLOCK)
-	WHERE PageCode = @PageCode
-
 	IF @IsUpdStatus = 0
 	BEGIN	
 
@@ -90,20 +84,6 @@ BEGIN
 			RETURN;
 		END
 
-		-- =========================
-		-- Check duplicate in LandingPage table
-		-- =========================	
-
-		IF @PageName IS NOT NULL AND EXISTS (
-			SELECT 1 
-			FROM dbo.LandingPage WITH (NOLOCK) 
-			WHERE PageName = @PageName 
-			AND PageId <> @LandingPageId
-		)
-		BEGIN
-			SELECT @ErrCode = 1008, @ErrMsg = N'Page name already exists. Please enter a different name.';
-			RETURN;
-		END		
 	END
 	-- Get all reference names for old data
 	DECLARE @OldLanguageName NVARCHAR(100), 
@@ -130,7 +110,7 @@ BEGIN
 	LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 	LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND tc.MarketId = b.MarketId
 	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON c.CampaignId = b.CampaignId
-	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON s.StatusId = b.StatusId
+	LEFT JOIN dbo.OH_f_PageBuilder_Status() s ON s.StatusId = b.StatusId
 	WHERE b.PageId = @PageId;
 
 	-- Create @OldData JSON
@@ -243,33 +223,6 @@ BEGIN
 	END
 
 	-- =========================
-	-- Update LandingPage table through Aff_Admin_LandingPage_Upd
-	-- =========================
-		BEGIN
-			DECLARE @BlockedCountries VARCHAR(500);
-			SELECT @BlockedCountries = STUFF((
-				SELECT DISTINCT ',' + CountryCode
-				FROM dbo.TargetCountry WITH (NOLOCK)
-				WHERE CountryCode <> ISNULL(@TargetCountryCode, 
-					(SELECT TargetCountryCode FROM dbo.PageBuilder WHERE PageId = @PageId))
-				FOR XML PATH('')
-			), 1, 1, '');
-
-			-- Check if any values are different from the current values in LandingPage
-			DECLARE @CurrentPageName VARCHAR(200),
-					@CurrentBlockTargetCountry VARCHAR(500),
-					@CurrentStatusId TINYINT,
-					@NeedsUpdate BIT = 0;
-
-			SELECT @CurrentPageName = PageName,
-					@CurrentBlockTargetCountry = BlockTargetCountry,
-					@CurrentStatusId = StatusId
-			FROM dbo.LandingPage WITH (NOLOCK)
-			WHERE PageId = @LandingPageId;
-
-		END
-
-	-- =========================
 	-- Write log
 	-- =========================
 	DECLARE @EndTime DATETIME = GETDATE();
@@ -301,7 +254,7 @@ BEGIN
 	LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 	LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND tc.MarketId = b.MarketId
 	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON c.CampaignId = b.CampaignId
-	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON s.StatusId = b.StatusId
+	LEFT JOIN dbo.OH_f_PageBuilder_Status() s ON s.StatusId = b.StatusId
 	WHERE b.PageId = @PageId;
 
 	-- Create @NewData JSON
