@@ -6,7 +6,7 @@
          
 */
 
-USE [ONEHub];
+USE [bodb_12b];
 GO
 CREATE USER [wsv_oh] FOR LOGIN [wsv_oh];
 GO

@@ -5,7 +5,8 @@
     Task: Create ExchangeOanda table [RedmineID: #244327]
          
 */
-
+USE [ONEHub]
+GO
 DROP TABLE IF EXISTS [dbo].[ExchangeOanda];
 GO
 

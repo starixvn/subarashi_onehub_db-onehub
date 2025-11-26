@@ -5,7 +5,8 @@
     Task: Create Domain Management Tables [RedmineId : #241764]
          
 */
-
+USE [ONEHub]
+GO
 -- 4. Drop & Create LinkGenerator Table
 IF EXISTS (SELECT TOP 1 1 FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[LinkGenerator]') AND type IN (N'U'))
 BEGIN
