@@ -1,7 +1,6 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 ALTER PROCEDURE [dbo].[OH_PageBuilder_ManageSel]
-	@CampaignName VARCHAR(200) = '', -- Search in both CampaignName and CampaignCode
-	@PageName VARCHAR(200) = '', -- Search in both PageName and PageCode
+	@Search			VARCHAR(500)  = '',
 	@TargetCountryCodes VARCHAR(500) = '',
 	@MarketIds VARCHAR(500) = '',
 	@StatusIds VARCHAR(500) = '',
@@ -47,6 +46,17 @@ BEGIN
         RowIdx INT
     );
 
+	DROP TABLE IF EXISTS #data_Statistics
+	CREATE TABLE #data_Statistics
+	(
+		[UniqueClick]   [int] NULL,
+		[PageCode]		VARCHAR(100) NULL,
+		[FTD]			[MONEY] NULL,
+		[Avg_FTD]		[MONEY] NULL,
+		[Bonus]			[int] NULL,
+		[Registration]  [int] NULL
+	)
+
     INSERT INTO #Data (
         CampaignCode, CampaignName, PageName, PageCode, 
         TargetCountryCode, TargetCountryName, MarketId, Language, TargetLanguageCode,
@@ -75,19 +85,16 @@ BEGIN
 	LEFT JOIN dbo.TargetCountry tc WITH (NOLOCK) ON tc.CountryCode = b.TargetCountryCode AND b.MarketId = tc.MarketId
 	LEFT JOIN dbo.Market m WITH (NOLOCK) ON m.MarketId = b.MarketId
 	LEFT JOIN dbo.OH_f_GetTargetLanguageCode() lcm ON m.ShortedCode = lcm.ShortedCode
-	LEFT JOIN dbo.OH_f_LandingPage_Status() s ON b.StatusId = s.StatusId
+	LEFT JOIN dbo.OH_f_PageBuilder_Status() s ON b.StatusId = s.StatusId
 	LEFT JOIN dbo.Campaign c WITH (NOLOCK) ON b.CampaignId = c.CampaignId
 	LEFT JOIN dbo.OH_User u1 WITH (NOLOCK) ON u1.UserId = b.Creator
 	LEFT JOIN dbo.OH_User u2 WITH (NOLOCK) ON u2.UserId = b.UpdatedBy
 	WHERE
-		(@CampaignName = '' 
-			OR c.CampaignName LIKE '%' + @CampaignName + '%'
-			OR c.CampaignCode LIKE '%' + @CampaignName + '%'
-		)
-		AND (
-			@PageName = ''
-			OR b.PageName LIKE '%' + @PageName + '%'
-			OR b.PageCode LIKE '%' + @PageName + '%'
+		(@Search = '' 
+			OR c.CampaignName LIKE '%' + @Search + '%'
+			OR c.CampaignCode LIKE '%' + @Search + '%'
+			OR b.PageName LIKE '%' + @Search + '%'
+			OR b.PageCode LIKE '%' + @Search + '%'
 		)
 		AND (
 			@TargetCountryCodes = ''
@@ -115,6 +122,27 @@ BEGIN
 		)
 		AND b.CreatedDate BETWEEN @FromDate AND DATEADD(DAY,1, @ToDate);
 
+
+	INSERT INTO #data_Statistics (PageCode, UniqueClick, FTD, Avg_FTD, Bonus, Registration)
+	SELECT d.PageCode, x.UniqueClick, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
+	FROM #data d
+	CROSS APPLY (
+		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
+		       SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END) AS FTD,
+			   CASE WHEN  SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
+			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
+			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END AS Avg_FTD,
+			   SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
+			  SUM(CASE WHEN m.ClickId IS NOT NULL THEN 1 ELSE 0 END) Registration
+		FROM LinkGenerator l WITH(NOLOCK)
+		INNER JOIN ClickStatistics c WITH(NOLOCK) ON l.LinkId = c.LinkId
+		LEFT JOIN  MemberInfo m WITH(NOLOCK) ON c.ClickId = m.ClickId AND m.IsRemoved = 0
+		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
+		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		OUTER APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
+		WHERE l.PageCode = d.PageCode AND c.Date >= l.CreatedDate
+	) x
+
     -- Get total row count
     SELECT @NRows = COUNT(*) FROM #Data;
     
@@ -137,7 +165,7 @@ BEGIN
         CampaignCode,
         CampaignName,
         PageName,
-        PageCode,
+        d.PageCode,
         TargetCountryCode,
         TargetCountryName,
         MarketId,
@@ -151,13 +179,22 @@ BEGIN
         Status,
         PageId,
         RowIdx,
-		0 AS Click,
-		0 AS Registration,
-		0 AS FTD,
-		0 AS Revenue
-    FROM #Data
+		ISNULL(df.UniqueClick,0) AS Click,
+		ISNULL(df.Registration,0) AS Registration,
+		ISNULL(df.FTD,0) AS FTD,
+		ISNULL(df.Avg_FTD,0) AS Avg_FTD,
+		ISNULL(df.Bonus,0) AS Bonus
+
+    FROM #Data d
+	LEFT JOIN #data_Statistics df ON d.PageCode = df.PageCode
     WHERE RowIdx BETWEEN @RowStart AND @RowEnd
     ORDER BY PageId DESC;
+
+	SELECT COUNT(*) AS TotalPageBuilders
+          ,SUM(CASE WHEN p.StatusId = 0 THEN 1 ELSE 0 END) AS DraftPageBuilders
+          ,SUM(CASE WHEN p.StatusId = 1 THEN 1 ELSE 0 END) AS ActivePageBuilders
+          ,SUM(CASE WHEN p.StatusId = 2 THEN 1 ELSE 0 END) AS InactivePageBuilders
+	FROM #Data p
     
     DROP TABLE #Data;
 END;

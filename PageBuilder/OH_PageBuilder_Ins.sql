@@ -104,18 +104,6 @@ BEGIN
 			RETURN;
 		END
 
-		-- Check in LandingPage
-		IF EXISTS (SELECT 1 FROM dbo.LandingPage WITH (NOLOCK) WHERE PageCode = @PageCode AND IsDeleted = 0)
-		BEGIN
-			SELECT @ErrCode = 1008, @ErrMsg = N'Page code already exists. Please enter a different code.';
-			RETURN;
-		END
-
-		IF EXISTS (SELECT 1 FROM dbo.LandingPage WITH (NOLOCK) WHERE PageName = @PageName AND IsDeleted = 0)
-		BEGIN
-			SELECT @ErrCode = 1009, @ErrMsg = N'Page name already exists. Please enter a different name.';
-			RETURN;
-		END
 	END
 
 	IF @IsPreview = 1
@@ -248,7 +236,7 @@ BEGIN
 
 	-- Get Status name
 	SELECT @StatusName = Status
-	FROM dbo.OH_f_LandingPage_Status() 
+	FROM dbo.OH_f_PageBuilder_Status() 
 	WHERE StatusId = @StatusId;
 
 	-- Compose @NewData JSON
