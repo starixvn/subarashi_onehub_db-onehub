@@ -59,7 +59,7 @@ BEGIN
 	(
 		[LinkID]		[int] NULL,
 		[UniqueClick]   [int] NULL,
-		[FTD]			[MONEY] NULL,
+		[FTD]			[int] NULL,
 		[Avg_FTD]		[MONEY] NULL,
 		[Bonus]			[int] NULL,
 		[Registration]  [int] NULL
@@ -92,7 +92,8 @@ BEGIN
 		[SiteId]		[smallint] NULL,
 		[StatusId]		[tinyint] NULL,
 		[CreatedDate]	[datetime] NOT NULL,
-		[RowIdx]		[INT]
+		[RowIdx]		[INT],
+		[Date]			[DATE]	NULL
     );
 	
 	INSERT INTO #data(
@@ -120,7 +121,8 @@ BEGIN
 		[SiteId]		,
 		[StatusId]		,
 		[CreatedDate]	,
-		[RowIdx]
+		[RowIdx]		,
+		[Date]
 	)
 	SELECT  [LinkId]		,
 			[LinkName]		,
@@ -146,7 +148,8 @@ BEGIN
 			[SiteId]		,
 			l.[StatusId]	,
 			l.[CreatedDate]	,
-			ROW_NUMBER() OVER(ORDER BY l.CreatedDate DESC) AS RowIdx
+			ROW_NUMBER() OVER(ORDER BY l.CreatedDate DESC) AS RowIdx,
+			l.Date
 	FROM dbo.LinkGenerator l WITH (NOLOCK)
 	LEFT JOIN Campaign cp  WITH (NOLOCK) ON l.CampaignId = cp.CampaignId
 	LEFT JOIN Country c   WITH (NOLOCK) ON l.CountryCode = c.CountryCode
@@ -154,8 +157,9 @@ BEGIN
 	WHERE ( EXISTS(SELECT 1 FROM @ChannelId_Tab ch WHERE ch.ChannelId = l.ChannelId) OR ISNULL(@ChannelIds,'') = '')
 	AND ( EXISTS(SELECT 1 FROM @CountryCode_Tab cc WHERE cc.CountryCode = l.CountryCode) OR ISNULL(@CountryCodes,'') = '')
 	AND (
-			(cp.CampaignCode LIKE '%' + @Search + '%') 
-		OR (cp.CampaignName LIKE '%' + @Search + '%')
+			(l.ShortDomain LIKE '%' + @Search + '%') 
+		OR (l.ShortPath LIKE '%' + @Search + '%')
+		OR (l.FullLink LIKE '%' + @Search + '%')
 		OR  ISNULL(@Search, '') = ''
 	)
 	AND l.CreatedDate BETWEEN @StartDate AND DATEADD(DAY,1,@EndDate)
@@ -167,7 +171,7 @@ BEGIN
 	FROM #data d
 	CROSS APPLY (
 		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
-		       SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END) AS FTD,
+		       SUM(CASE WHEN m.ClickId IS NOT NULL  AND m.FTDDate IS NOT NULL THEN 1 ELSE 0 END) AS FTD,
 			   CASE WHEN SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
 			   
 			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
@@ -177,9 +181,14 @@ BEGIN
 		FROM ClickStatistics c WITH(NOLOCK) 
 		LEFT JOIN  MemberInfo m WITH(NOLOCK) ON c.ClickId = m.ClickId AND m.IsRemoved = 0
 		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
-		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		OUTER APPLY 
+		(
+			SELECT    TOP 1 b.CustID CustID
+			FROM	bodb_12B.dbo.BonusInfo b WITH(NOLOCK) 
+			WHERE   m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		) b
 		OUTER APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
-		WHERE c.LinkId = d.LinkId AND c.Date >= d.CreatedDate
+		WHERE c.LinkId = d.LinkId AND c.Date >= d.Date AND c.ClickTypeId = 0
 	) x
 
 
@@ -213,8 +222,8 @@ BEGIN
 		   ,d.CreatedDate
 		   ,ISNULL(df.UniqueClick,0) AS Click
 		   ,ISNULL(df.Registration,0) AS Registration
-	       ,ISNULL(df.FTD,0) AS FTD
-	       ,ISNULL(df.Avg_FTD,0) AS Avg_FTD
+	       ,ISNULL(df.FTD,0) AS Ftd
+	       ,ISNULL(df.Avg_FTD,0) AS AvgFTD
 		   ,d.StatusId
 		   ,CASE WHEN d.StatusId = 1 THEN 'Active' ELSE 'Inactive' END StatusName
 		   ,FullLink
@@ -251,7 +260,7 @@ BEGIN
     ORDER BY RowIdx ASC;
 
 
-	DECLARE @TotalClicks INT, @TotalRegistrations INT, @TotalFTDs MONEY, @AvgFTDs MONEY, @Bonus INT, @TotalLinks INT
+	DECLARE @TotalClicks INT, @TotalRegistrations INT, @TotalFTDs INT, @AvgFTDs MONEY, @Bonus INT, @TotalLinks INT
 
 	SELECT @TotalLinks = COUNT(1) FROM #data
 
