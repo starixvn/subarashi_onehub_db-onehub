@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-CREATE PROCEDURE [dbo].[Task_OH_MemberInfo_ImportedTime]
+CREATE PROCEDURE [dbo].[Task_API_MemberInfo_ImportedTime]
 	@LastImportedTime 	DATETIME
 	,@SName 			VARCHAR(50) = 'MemberInfoLastImportedTime'
 	,@ErrCode			INT = 0 OUTPUT

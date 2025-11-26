@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-ALTER PROCEDURE [dbo].[Task_OH_MemberInfo_Import]
+ALTER PROCEDURE [dbo].[Task_API_MemberInfo_Import]
 	@XmlData	XML
 	,@ErrCode	INT = 0 OUTPUT
 	,@ErrMsg	VARCHAR(2000) = '' OUTPUT

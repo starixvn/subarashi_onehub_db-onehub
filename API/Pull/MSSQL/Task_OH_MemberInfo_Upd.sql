@@ -1,12 +1,14 @@
 /*<info serverAlias="DBOH-ONEHub" isFunction="0" isNested="0"></info>*/
+
 CREATE PROCEDURE [dbo].[Task_OH_MemberInfo_Upd]
-	@IsReal BIT = 0 
+	@IsReal BIT = 0,
+	@SiteId SMALLINT = 101
 AS
 
 /*
 	Created: 20251118@Sophia
 	DB: DBOH-ONEHub
-	Task: Job - Update member info
+	Task: Job (SQL) - Update member info
 
 	Revisions:
 		- 20251118@Sophia: Initialize SP [RedmineID: #244327]
@@ -19,51 +21,40 @@ AS
 
 BEGIN
 	SET NOCOUNT ON
-
+ 
 	DECLARE @LastUpdatedTime DATETIME, @TimeZone INT
-	
-	SELECT @TimeZone = CONVERT(TINYINT, SValue)
-	FROM dbo.SystemSettings WITH (NOLOCK)
-	WHERE SName = 'TimeZone'
+	SELECT  @TimeZone = dbo.OH_f_GetSetting('TimeZone'),
+			@LastUpdatedTime = dbo.OH_f_GetSetting('MemberInfoLastUpdatedTime')		
 
-	SELECT @LastUpdatedTime = CONVERT(DATETIME, SValue)
-	FROM dbo.SystemSettings WITH (NOLOCK)
-	WHERE SName = 'MemberInfoLastImportedTime'
+	SELECT @LastUpdatedTime =  CONVERT(DATE, DATEADD(DAY, -1, @LastUpdatedTime))  -- Recall data backward a day
 
-	SELECT @LastUpdatedTime = ISNULL(CONVERT(DATE, DATEADD(DAY, -1, @LastUpdatedTime)), '2021-01-01') -- Recall data backward a day
-
-	-- Real time: will use the SName = 'RealMemberInfoLastImportedTime', re-call data backward 1 hour
+	-- Real time: will use the SName = 'RealMemberInfoLastUpdatedTime', re-call data backward 1 hour
 	IF @IsReal = 1
 	BEGIN 
-		SELECT @LastUpdatedTime = CONVERT(DATETIME, SValue)
-		FROM dbo.SystemSettings WITH (NOLOCK)
-		WHERE SName = 'RealMemberInfoLastImportedTime'
-		
+		SELECT @LastUpdatedTime = dbo.OH_f_GetSetting('RealMemberInfoLastUpdatedTime')
 		SELECT @LastUpdatedTime = DATEADD(HOUR, -1, @LastUpdatedTime)
 	END
 
-	CREATE TABLE #MemberInfo
+	CREATE TABLE #Customer
 	(
 		RowNumber			INT IDENTITY(1,1)
 		,CustId				INT
-		,UserName			VARCHAR(30)
-		,Currency			INT
+		,IBCUsername		VARCHAR(50)
 		,ActStatus			TINYINT
 		,Status				TINYINT
-		,RegisteredDate		DATETIME
 		,FirstDepositDate	DATETIME
 		,FirstDepositAmount	MONEY
-		,ClickId			BIGINT
 		,TagList			NVARCHAR(MAX)
 		,UpdatedTime		DATETIME
 	)
 
-	INSERT INTO #MemberInfo (CustId, UserName, Currency, ActStatus, Status, RegisteredDate, FirstDepositDate, FirstDepositAmount, ClickId, TagList, UpdatedTime)
-	SELECT CustId, UserName, Currency, ActStatus, Status, RegisteredDate, FirstDepositDate, FirstDepositAmount, ClickId, TagList, UpdatedTime
-	FROM dbo.MemberInfo WITH (NOLOCK)
-	WHERE UpdatedTime >= @LastUpdatedTime
+	INSERT INTO #Customer (CustId, IBCUsername, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime, TagList)
+	SELECT CustId, TpSystemUserName, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime, TagList
+	FROM bodb_12B.dbo.Customer WITH (NOLOCK)
+	WHERE SiteId = @SiteId
+		AND UpdatedTime >= @LastUpdatedTime
 
-	IF EXISTS (SELECT 1 FROM #MemberInfo)
+	IF EXISTS (SELECT 1 FROM #Customer)
 	BEGIN
 		-- Update in batches of 2000 rows
 		DECLARE @StartRow	INT 
@@ -72,7 +63,7 @@ BEGIN
 			,@Threshold		INT  -- the number of each batch
 
 		SET @Threshold = 2000
-		SELECT @MaxRow = MAX(RowNumber) FROM #MemberInfo
+		SELECT @MaxRow = MAX(RowNumber) FROM #Customer
 
 		IF (@Threshold >= @MaxRow)
 			SET @Threshold = @MaxRow
@@ -82,8 +73,6 @@ BEGIN
 
 		WHILE (@MaxRow IS NOT NULL)
 		BEGIN
-			-- Update logic for MemberInfo synchronization
-			-- Process records in batches for performance
 			UPDATE mi WITH (ROWLOCK, UPDLOCK)
 			SET mi.UserName = m.UserName
 				,mi.Currency = m.Currency
@@ -95,8 +84,10 @@ BEGIN
 				,mi.ClickId = m.ClickId
 				,mi.TagList = m.TagList
 			FROM dbo.MemberInfo mi
-				INNER JOIN #MemberInfo m ON mi.CustId = m.CustId
-			WHERE m.RowNumber BETWEEN @StartRow AND @StopRow
+				INNER JOIN #Customer c ON mi.CustId = c.CustId
+				LEFT JOIN dbo.TpExchange t WITH (NOLOCK) ON t.TpExchangeId = mi.Currency
+				INNER JOIN dbo.Exchange e WITH (NOLOCK) ON ISNULL(t.ExchangeId, mi.Currency) = e.ExchangeId
+			WHERE c.RowNumber BETWEEN @StartRow AND @StopRow
 
 			IF @StopRow = @MaxRow BREAK
 
@@ -106,26 +97,26 @@ BEGIN
 
 			IF @StopRow >= @MaxRow
 				SET @StopRow = @MaxRow
-
 		END
 
-		SELECT @LastUpdatedTime = MAX(UpdatedTime) FROM #MemberInfo
+		SELECT @LastUpdatedTime = MAX(UpdatedTime) FROM #Customer
 
 		IF @IsReal = 1 
 		BEGIN 
 			UPDATE dbo.SystemSettings WITH (ROWLOCK, UPDLOCK)
 			SET SValue = CONVERT(VARCHAR(20), @LastUpdatedTime, 120)
-			WHERE SName = 'RealMemberInfoLastImportedTime'		
+			WHERE SName = 'RealMemberInfoLastUpdatedTime'		
 		END 
 		ELSE
 		BEGIN 
 			UPDATE dbo.SystemSettings WITH (ROWLOCK, UPDLOCK)
 			SET SValue = CONVERT(VARCHAR(20), @LastUpdatedTime, 120)
-			WHERE SName = 'MemberInfoLastImportedTime'
+			WHERE SName = 'MemberInfoLastUpdatedTime'
 		END 
-		
-	END
 
-	DROP TABLE #MemberInfo
+		DROP TABLE #Customer   
+	END
 END
 GO
+
+    
