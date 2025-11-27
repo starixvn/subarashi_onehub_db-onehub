@@ -135,4 +135,3 @@ BEGIN
         @Duration   = @Duration;
 
 END;
-GO

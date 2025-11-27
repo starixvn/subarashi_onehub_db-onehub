@@ -1,5 +1,5 @@
 /*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
-ALTER PROCEDURE [dbo].[OH_Domain_Ins]
+ALTER  PROCEDURE [dbo].[OH_Domain_Ins]
     @Data NVARCHAR(MAX),
     @DomainType TINYINT,
     @SiteId SMALLINT = 101,
@@ -104,11 +104,13 @@ BEGIN
     -- Create temp tables for processing
     CREATE TABLE #TempDomain (
         DomainName VARCHAR(200),
+        DomainType TINYINT,
         Note NVARCHAR(200)
     );
 
     CREATE TABLE #TempDomainDetail (
         DomainName VARCHAR(200),
+        DomainType TINYINT,
         CountryCode VARCHAR(20),
         Score SMALLINT
     );
@@ -116,16 +118,18 @@ BEGIN
     -- Parse JSON into temp tables (using short codes)
     BEGIN TRY
         -- Parse Domain data
-        INSERT INTO #TempDomain (DomainName, Note)
+        INSERT INTO #TempDomain (DomainName, DomainType, Note)
         SELECT 
             JSON_VALUE(value, '$.DmN') AS DomainName,
+            @DomainType AS DomainType,
             JSON_VALUE(value, '$.Nt') AS Note
         FROM OPENJSON(@Data);
 
         -- Parse DomainDetail data
-        INSERT INTO #TempDomainDetail (DomainName, CountryCode, Score)
+        INSERT INTO #TempDomainDetail (DomainName, DomainType, CountryCode, Score)
         SELECT 
             JSON_VALUE(domain.value, '$.DmN') AS DomainName,
+            @DomainType AS DomainType,
             JSON_VALUE(detail.value, '$.CC') AS CountryCode,
             JSON_VALUE(detail.value, '$.Sc') AS Score
         FROM OPENJSON(@Data) AS domain
@@ -152,15 +156,15 @@ BEGIN
     USING #TempDomainDetail AS source
     ON target.DomainName = source.DomainName 
        AND target.CountryCode = source.CountryCode
-       AND target.DomainType = @DomainType
+       AND target.DomainType = source.DomainType
        AND target.SiteId = @SiteId
     WHEN MATCHED THEN
         UPDATE SET 
             Score = source.Score
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (DomainName, CountryCode, Score, DomainType, SiteId)
-        VALUES (source.DomainName, source.CountryCode, source.Score, @DomainType, @SiteId)
-    WHEN NOT MATCHED BY SOURCE AND target.DomainName IN (SELECT DomainName FROM #TempDomain) 
+        VALUES (source.DomainName, source.CountryCode, source.Score, source.DomainType, @SiteId)
+    WHEN NOT MATCHED BY SOURCE 
        AND target.DomainType = @DomainType
        AND target.SiteId = @SiteId THEN
         DELETE;
@@ -169,16 +173,16 @@ BEGIN
     MERGE INTO dbo.Domain AS target
     USING #TempDomain AS source
     ON target.DomainName = source.DomainName 
-       AND target.DomainType = @DomainType 
+       AND target.DomainType = source.DomainType 
        AND target.SiteId = @SiteId
     WHEN MATCHED THEN
         UPDATE SET 
             Note = source.Note
     WHEN NOT MATCHED BY TARGET THEN
         INSERT (DomainName, DomainType, Note, SiteId, CreatedDate)
-        VALUES (source.DomainName, @DomainType, source.Note, @SiteId, DATEADD(HOUR, @TimeZone, GETUTCDATE()))
-    WHEN NOT MATCHED BY SOURCE AND target.DomainName IN (SELECT DomainName FROM #TempDomain) 
-       AND target.DomainType = @DomainType 
+        VALUES (source.DomainName, source.DomainType, source.Note, @SiteId, DATEADD(HOUR, @TimeZone, GETUTCDATE()))
+    WHEN NOT MATCHED BY SOURCE 
+       AND target.DomainType = @DomainType
        AND target.SiteId = @SiteId THEN
         DELETE;
 
@@ -187,4 +191,3 @@ BEGIN
     DROP TABLE #TempDomainDetail;
 
 END;
-GO

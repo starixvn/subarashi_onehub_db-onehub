@@ -9,7 +9,7 @@ CREATE DEFINER=`OneHub_Api`@`%` PROCEDURE `OH_CustomerSel`(
   IN _pageSize INT
     /*
     Created: 20251119@Sophia
-    DB: ONEHub
+    DB:  Siebog
     Task: Get player information for ONEHub system [RedmineId: #244327]
     
 	Revisions:
@@ -19,7 +19,7 @@ CREATE DEFINER=`OneHub_Api`@`%` PROCEDURE `OH_CustomerSel`(
 		fromDate, toDate: an hour
 		pageSize: max is 2000
 	Example CALL:
-		CALL ONEHub.OH_CustomerSel('2025-08-01 00:00:00', '2025-08-31 23:59:59', 0, 100);
+		CALL Siebog.OH_CustomerSel('2025-08-01 00:00:00', '2025-08-31 23:59:59', 0, 100);
 		-- Get the first 100 records from 2025-08-01 to 2025-08-31
 		-- PageIndex starts from 0		
  */
@@ -29,18 +29,25 @@ BEGIN
 	SET _pageSize = IF(_pageSize > 2000, 2000, _pageSize); -- maximum is 2000
 	SET _offSet = _pageIndex * _pageSize;
     
-	WITH CTE_MemberInfo AS(
-		SELECT m.CustId, m.SiteId, m.UserName, m.FirstName, m.LastName, m.Email, m.Currency, m.ActStatus, m.Status, m.IsRemoved, m.RegisteredDate, m.RegDate, m.IDCode, m.CreatedDate, m.ClickId, m.FirstDepositDate, m.FTDDate, m.FirstDepositAmount
-		FROM `Siebog`.`MemberInfo` m
-		WHERE m.FirstDepositDate BETWEEN _fromDate AND _toDate
+	WITH CTE_CustomerInfo AS(
+		SELECT c.CustId, c.SiteId, s.SiteName, a.IDCode, c.UserName, c.Userpwd, c.CurrencyId, c.UserLang, c.ActStatus, c.UserLevel, c.LastLoginTime, c.RegTime, cw.TaskTime AS FirstDepositTime, c.IsTest, c.IsKyc, c.IsRisk, c.`Status`,a.ClickId
+		FROM `Customer` c
+			INNER JOIN `OH_Link_ClickLog` a ON a.CustId = c.CustId
+			INNER JOIN `CustTaskTime` cw ON cw.CustId = c.CustId AND cw.TaskId = 6
+			INNER JOIN `ServerInfo` s ON c.SiteId = s.SiteId
+		WHERE cw.TaskTime between _fromDate and _ToDate
 		UNION
-		SELECT m.CustId, m.SiteId, m.UserName, m.FirstName, m.LastName, m.Email, m.Currency, m.ActStatus, m.Status, m.IsRemoved, m.RegisteredDate, m.RegDate, m.IDCode, m.CreatedDate, m.ClickId, m.FirstDepositDate, m.FTDDate, m.FirstDepositAmount
-		FROM `Siebog`.`MemberInfo` m
-		WHERE m.RegisteredDate BETWEEN _fromDate AND _toDate
+		SELECT c.CustId, c.SiteId, s.SiteName, a.IDCode, c.UserName, c.Userpwd, c.CurrencyId, c.UserLang, c.ActStatus, c.UserLevel, c.LastLoginTime, c.RegTime, cw.TaskTime AS FirstDepositTime, c.IsTest, c.IsKyc, c.IsRisk, c.`Status`,  a.ClickId
+		FROM `Customer` c
+			INNER JOIN `OH_Link_ClickLog` a ON a.CustId = c.CustId
+			LEFT JOIN `CustTaskTime` cw ON cw.CustId = c.CustId AND cw.TaskId = 6
+			INNER JOIN `ServerInfo` s ON c.SiteId = s.SiteId
+		WHERE c.RegTime  between _fromDate and _ToDate
+		
 	)
-		SELECT m.CustId, m.SiteId, m.UserName, m.FirstName, m.LastName, m.Email, m.Currency, m.ActStatus, m.Status, m.IsRemoved, m.RegisteredDate, m.RegDate, m.IDCode, m.CreatedDate, m.ClickId, m.FirstDepositDate, m.FTDDate, m.FirstDepositAmount
-		FROM CTE_MemberInfo m
-		ORDER BY m.RegisteredDate ASC, m.CustId ASC
+		SELECT c.CustId, c.SiteId, c.SiteName, c.IDCode, c.UserName, c.Userpwd, c.CurrencyId, c.UserLang, c.ActStatus, c.UserLevel, c.LastLoginTime, c.RegTime, c.FirstDepositTime, c.IsTest, c.IsKyc, c.IsRisk, c.`Status`, c.ClickId
+		FROM CTE_CustomerInfo c
+		ORDER BY c.RegTime ASC, c.CustId ASC
 		LIMIT _offSet, _pageSize;
 
 END 
