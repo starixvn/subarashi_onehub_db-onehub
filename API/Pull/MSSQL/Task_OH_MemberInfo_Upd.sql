@@ -48,8 +48,8 @@ BEGIN
 		,UpdatedTime		DATETIME
 	)
 
-	INSERT INTO #Customer (CustId, IBCUsername, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime, TagList)
-	SELECT CustId, TpSystemUserName, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime, TagList
+	INSERT INTO #Customer (CustId, IBCUsername, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime)
+	SELECT CustId, TpSystemUserName, ActStatus, Status, FirstDepositDate, FirstDepositAmount, UpdatedTime
 	FROM bodb_12B.dbo.Customer WITH (NOLOCK)
 	WHERE SiteId = @SiteId
 		AND UpdatedTime >= @LastUpdatedTime
@@ -74,15 +74,10 @@ BEGIN
 		WHILE (@MaxRow IS NOT NULL)
 		BEGIN
 			UPDATE mi WITH (ROWLOCK, UPDLOCK)
-			SET mi.UserName = m.UserName
-				,mi.Currency = m.Currency
-				,mi.ActStatus = m.ActStatus
-				,mi.Status = m.Status
-				,mi.RegisteredDate = m.RegisteredDate
-				,mi.FirstDepositDate = m.FirstDepositDate
-				,mi.FirstDepositAmount = m.FirstDepositAmount
-				,mi.ClickId = m.ClickId
-				,mi.TagList = m.TagList
+			SET mi.ActStatus = c.ActStatus
+				,mi.Status = c.Status
+				,mi.FirstDepositDate = c.FirstDepositDate
+				,mi.FirstDepositAmount = c.FirstDepositAmount
 			FROM dbo.MemberInfo mi
 				INNER JOIN #Customer c ON mi.CustId = c.CustId
 				LEFT JOIN dbo.TpExchange t WITH (NOLOCK) ON t.TpExchangeId = mi.Currency
