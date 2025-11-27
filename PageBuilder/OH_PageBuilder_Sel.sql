@@ -51,7 +51,7 @@ BEGIN
 			ON t.CountryCode = b.TargetCountryCode AND t.MarketID = b.MarketId
 		INNER JOIN dbo.Market mk WITH (NOLOCK)
 			ON mk.MarketId = b.MarketId
-		LEFT JOIN dbo.Aff_f_GetTargetLanguageCode() m
+		LEFT JOIN dbo.OH_f_GetTargetLanguageCode() m
 			ON mk.ShortedCode = m.ShortedCode
 		LEFT JOIN dbo.TPExchange tp WITH (NOLOCK)
 			ON tp.CountryCode = b.TargetCountryCode
@@ -105,7 +105,7 @@ BEGIN
 			ON t.CountryCode = b.TargetCountryCode AND t.MarketID = b.MarketId
 		INNER JOIN dbo.Market mk WITH (NOLOCK)
 			ON mk.MarketId = b.MarketId
-		LEFT JOIN dbo.Aff_f_GetTargetLanguageCode() m
+		LEFT JOIN dbo.OH_f_GetTargetLanguageCode() m
 			ON mk.ShortedCode = m.ShortedCode
 		LEFT JOIN dbo.TPExchange tp WITH (NOLOCK)
 			ON tp.CountryCode = b.TargetCountryCode
