@@ -23,15 +23,15 @@ BEGIN
 	SET NOCOUNT ON
  
 	DECLARE @LastUpdatedTime DATETIME, @TimeZone INT
-	SELECT  @TimeZone = dbo.OH_f_GetSetting('TimeZone'),
-			@LastUpdatedTime = dbo.OH_f_GetSetting('MemberInfoLastUpdatedTime')		
+	SELECT  @TimeZone = dbo.OH_f_GetSystemSetting('TimeZone'),
+			@LastUpdatedTime = dbo.OH_f_GetSystemSetting('MemberInfoLastUpdatedTime')		
 
 	SELECT @LastUpdatedTime =  CONVERT(DATE, DATEADD(DAY, -1, @LastUpdatedTime))  -- Recall data backward a day
 
 	-- Real time: will use the SName = 'RealMemberInfoLastUpdatedTime', re-call data backward 1 hour
 	IF @IsReal = 1
 	BEGIN 
-		SELECT @LastUpdatedTime = dbo.OH_f_GetSetting('RealMemberInfoLastUpdatedTime')
+		SELECT @LastUpdatedTime = dbo.OH_f_GetSystemSetting('RealMemberInfoLastUpdatedTime')
 		SELECT @LastUpdatedTime = DATEADD(HOUR, -1, @LastUpdatedTime)
 	END
 
