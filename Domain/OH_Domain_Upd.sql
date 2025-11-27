@@ -1,3 +1,4 @@
+/*<info serverAlias="DBOH-ONEHub" executers="wsv_oh" isFunction="0" isNested="0"></info>*/
 CREATE PROCEDURE [dbo].[OH_Domain_Upd]
     @DomainName VARCHAR(200),
     @Note NVARCHAR(200),
@@ -134,5 +135,3 @@ BEGIN
         @Duration   = @Duration;
 
 END;
-
-GRANT EXECUTE ON [OH_Domain_Upd] TO [wsv_oh]

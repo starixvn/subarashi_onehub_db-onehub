@@ -69,7 +69,7 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'Every 30 
 		@enabled=1, 
 		@freq_type=4, 
 		@freq_interval=1, 
-		@freq_subday_type=8, 
+		@freq_subday_type=4, 
 		@freq_subday_interval=30, 
 		@freq_relative_interval=0, 
 		@freq_recurrence_factor=0, 
