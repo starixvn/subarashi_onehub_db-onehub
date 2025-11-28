@@ -49,8 +49,14 @@ TRUNCATE TABLE PageBuilderDetail
 TRUNCATE TABLE PageBuilderDetail_Preview
 TRUNCATE TABLE PageBuilder_Preview
 TRUNCATE TABLE ClickStatistics
+
 TRUNCATE TABLE IDCode
 TRUNCATE TABLE LinkGenerator
+
+-- Reseed IDENTITY columns
+DBCC CHECKIDENT ('IDCode', RESEED, 1);
+DBCC CHECKIDENT ('LinkGenerator', RESEED, 1);
+
 
 
 UPDATE MediaCode WITH(Rowlock, UpdLOCK) 
