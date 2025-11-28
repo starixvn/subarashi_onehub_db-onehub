@@ -38,7 +38,6 @@ WHERE NOT EXISTS (SELECT TOP 1 1 FROM TargetCountry e WITH(NOLOCK) WHERE c.Marke
 -- truncate and Migrate data from AFF12B
 TRUNCATE TABLE Domain
 TRUNCATE TABLE DomainDetail
-TRUNCATE TABLE DomainLog
 TRUNCATE TABLE Component
 TRUNCATE TABLE Campaign
 TRUNCATE TABLE MediaGallery
@@ -59,7 +58,7 @@ WHERE MediaId IS NOT NULL
 -- Campaign
 SET  IDENTITY_INSERT Campaign ON 
 INSERT INTO Campaign(CampaignId,	CampaignName,	CampaignCode,	Description,	Creator,	CreatedDate,	UpdatedBy,	UpdatedDate,	StatusId)
-SELECT CampaignId,	CampaignName,	CampaignCode,	Description,	NULL Creator,	CreatedDate,	NULL UpdatedBy,	UpdatedDate,	StatusId
+SELECT CampaignId,	CampaignName,	CampaignCode,	Description,	3 Creator,	CreatedDate,	NULL UpdatedBy,	UpdatedDate,	StatusId
 FROM Affiliate_12B.dbo.LandingPage_Campaign WITH(NOLOCK);
 SET  IDENTITY_INSERT Campaign OFF
 
@@ -73,7 +72,7 @@ WHERE u.MediaId IS NOT NULL
 -- MediaGallery
 SET  IDENTITY_INSERT MediaGallery ON 
 INSERT INTO MediaGallery (MediaId,MediaName,FileName,ModuleId,Dimension,StatusId,TargetCountryCode,MarketId,Creator,CreatedDate,UpdatedBy,UpdatedDate,MediaCode)
-SELECT MediaId,MediaName,FileName,ModuleId,Dimension,StatusId,TargetCountryCode,MarketId, NULL Creator,CreatedDate,NULL UpdatedBy,UpdatedDate,MediaCode
+SELECT MediaId,MediaName,FileName,ModuleId,Dimension,StatusId,TargetCountryCode,MarketId, 3 Creator,CreatedDate,NULL UpdatedBy,UpdatedDate,MediaCode
 FROM  Affiliate_12B.dbo.LandingPage_MediaGallery WITH(NOLOCK)
 SET  IDENTITY_INSERT MediaGallery OFF 
 
@@ -81,7 +80,7 @@ SET  IDENTITY_INSERT MediaGallery OFF
 SET  IDENTITY_INSERT PageBuilder ON 
 
 INSERT INTO PageBuilder (PageId,PageName,PageCode,CampaignId,TargetCountryCode,MarketId,StatusId,Creator,CreatedDate,UpdatedBy,UpdatedDate	)
-SELECT PageId,PageName,PageCode,CampaignId,TargetCountryCode,MarketId,StatusId,NULL Creator,CreatedDate, NULL UpdatedBy,UpdatedDate	
+SELECT PageId,PageName,PageCode,CampaignId,TargetCountryCode,MarketId,StatusId,3 Creator,CreatedDate, NULL UpdatedBy,UpdatedDate	
 FROM  Affiliate_12B.dbo.LandingPage_Builder WITH(NOLOCK)
 
 SET  IDENTITY_INSERT PageBuilder OFF 
@@ -92,17 +91,5 @@ INSERT INTO PageBuilderDetail (	PageId,	OrderId,	ModuleId,	MediaId,	ExtraInfo)
 SELECT 	PageId,	OrderId,	ModuleId,	MediaId,	ExtraInfo
 FROM  Affiliate_12B.dbo.LandingPage_BuilderDetail WITH(NOLOCK)
 
-
-
--- PageBuilder_Preview
-INSERT INTO PageBuilder_Preview (PageId,	PageName,	PageCode,	CampaignId,	TargetCountryCode,	MarketId,	StatusId,	Creator,	CreatedDate,	UpdatedBy,	UpdatedDate)
-SELECT PageId,	PageName,	PageCode,	CampaignId,	TargetCountryCode,	MarketId,	StatusId, NULL	Creator,	CreatedDate, NULL UpdatedBy,	UpdatedDate
-FROM  Affiliate_12B.dbo.LandingPage_Builder_Preview WITH(NOLOCK)
-
-
--- PageBuilderDetail_Preview
-INSERT INTO PageBuilderDetail_Preview (PageId,	OrderId, ModuleId,	MediaId,	ExtraInfo)
-SELECT PageId,	OrderId, ModuleId,	MediaId,	ExtraInfo
-FROM  Affiliate_12B.dbo.LandingPage_BuilderDetail_Preview WITH(NOLOCK)
 
 
