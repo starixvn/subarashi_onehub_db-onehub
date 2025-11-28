@@ -1,8 +1,11 @@
 /*<info serverAlias="DBOH-ONEHub"></info>*/
 /*
-    Created: 20251120@Danny
+    Created: 20251128@Danny
     DB: DBOH-ONEHub
-    Task: Migrate data from AFF12B to ONEHub
+    Task: Migrate data from AFF12B to ONEHub - Creator mapping
+
+    Revisions:
+        - 20251128@Sophia: Updated Creator mapping logic for Campaign, MediaGallery, and PageBuilder tables to map UserID from OH_User based on username from Affiliate_12B.dbo.Users
 */
 
  
@@ -58,8 +61,10 @@ WHERE MediaId IS NOT NULL
 -- Campaign
 SET  IDENTITY_INSERT Campaign ON 
 INSERT INTO Campaign(CampaignId,	CampaignName,	CampaignCode,	Description,	Creator,	CreatedDate,	UpdatedBy,	UpdatedDate,	StatusId)
-SELECT CampaignId,	CampaignName,	CampaignCode,	Description,	3 Creator,	CreatedDate,	NULL UpdatedBy,	UpdatedDate,	StatusId
-FROM Affiliate_12B.dbo.LandingPage_Campaign WITH(NOLOCK);
+SELECT lc.CampaignId,	lc.CampaignName,	lc.CampaignCode,	lc.Description,	ISNULL(ou.UserID, 3) Creator,	lc.CreatedDate,	NULL UpdatedBy,	lc.UpdatedDate,	lc.StatusId
+FROM Affiliate_12B.dbo.LandingPage_Campaign lc WITH(NOLOCK)
+LEFT JOIN Affiliate_12B.dbo.Users u WITH(NOLOCK) ON lc.Creator = u.UserID
+LEFT JOIN dbo.OH_User ou WITH(NOLOCK) ON u.Username = ou.Username;
 SET  IDENTITY_INSERT Campaign OFF
 
 -- MediaCode
@@ -72,16 +77,22 @@ WHERE u.MediaId IS NOT NULL
 -- MediaGallery
 SET  IDENTITY_INSERT MediaGallery ON 
 INSERT INTO MediaGallery (MediaId,MediaName,FileName,ModuleId,Dimension,StatusId,TargetCountryCode,MarketId,Creator,CreatedDate,UpdatedBy,UpdatedDate,MediaCode)
-SELECT MediaId,MediaName,FileName,ModuleId,Dimension,StatusId,TargetCountryCode,MarketId, 3 Creator,CreatedDate,NULL UpdatedBy,UpdatedDate,MediaCode
-FROM  Affiliate_12B.dbo.LandingPage_MediaGallery WITH(NOLOCK)
+SELECT mg.MediaId,mg.MediaName,mg.FileName,mg.ModuleId,mg.Dimension,mg.StatusId,mg.TargetCountryCode,mg.MarketId, ISNULL(ou.UserID, 3) Creator,mg.CreatedDate,NULL UpdatedBy,mg.UpdatedDate,mg.MediaCode
+FROM  Affiliate_12B.dbo.LandingPage_MediaGallery mg WITH(NOLOCK)
+LEFT JOIN Affiliate_12B.dbo.Users u WITH(NOLOCK) ON mg.Creator = u.UserID
+LEFT JOIN dbo.OH_User ou WITH(NOLOCK) ON u.Username = ou.Username
 SET  IDENTITY_INSERT MediaGallery OFF 
 
 -- PageBuilder
 SET  IDENTITY_INSERT PageBuilder ON 
 
 INSERT INTO PageBuilder (PageId,PageName,PageCode,CampaignId,TargetCountryCode,MarketId,StatusId,Creator,CreatedDate,UpdatedBy,UpdatedDate	)
-SELECT PageId,PageName,PageCode,CampaignId,TargetCountryCode,MarketId,StatusId,3 Creator,CreatedDate, NULL UpdatedBy,UpdatedDate	
-FROM  Affiliate_12B.dbo.LandingPage_Builder WITH(NOLOCK)
+SELECT pb.PageId,pb.PageName,pb.PageCode,pb.CampaignId,pb.TargetCountryCode,pb.MarketId,pb.StatusId,
+	ISNULL(ou.UserID, 3) AS Creator,
+	pb.CreatedDate, NULL AS UpdatedBy,pb.UpdatedDate	
+FROM  Affiliate_12B.dbo.LandingPage_Builder pb WITH(NOLOCK)
+LEFT JOIN Affiliate_12B.dbo.Users u WITH(NOLOCK) ON pb.Creator = u.UserID
+LEFT JOIN dbo.OH_User ou WITH(NOLOCK) ON u.Username = ou.Username
 
 SET  IDENTITY_INSERT PageBuilder OFF 
 
@@ -90,6 +101,7 @@ SET  IDENTITY_INSERT PageBuilder OFF
 INSERT INTO PageBuilderDetail (	PageId,	OrderId,	ModuleId,	MediaId,	ExtraInfo)
 SELECT 	PageId,	OrderId,	ModuleId,	MediaId,	ExtraInfo
 FROM  Affiliate_12B.dbo.LandingPage_BuilderDetail WITH(NOLOCK)
+
 
 
 
