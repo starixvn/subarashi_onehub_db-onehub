@@ -249,7 +249,8 @@ BEGIN
         SiteId,
         StatusId,
         Creator,
-        CreatedDate
+        CreatedDate,
+        Date
     )
     VALUES (
         @LinkName,
@@ -272,7 +273,8 @@ BEGIN
         @SiteId,
         @StatusId,
         @UserId,
-        DATEADD(HOUR, @TimeZone, GETUTCDATE())
+        DATEADD(HOUR, @TimeZone, GETUTCDATE()),
+        CONVERT (DATE, DATEADD(HOUR, @TimeZone, GETUTCDATE()))
     );
 
     SET @LinkId = SCOPE_IDENTITY();
