@@ -21,6 +21,9 @@ CREATE PROCEDURE [dbo].[OH_SignUp]
     @SignUpUrl NVARCHAR(500) = '',
     @UserAgent NVARCHAR(500) = '',
     @IP VARCHAR(50) = '',
+    @IdCode VARCHAR(20) = '', 
+    @OClickId INT = 0, 
+    @OLinkId INT = 0,
     @ErrCode INT = 0 OUTPUT,
     @ErrMsg NVARCHAR(MAX) = '' OUTPUT
 AS
@@ -69,6 +72,9 @@ BEGIN
               ,@SignUpUrl AS 'su'
               ,@UserAgent AS 'ua'
               ,@IP AS 'ip'
+              ,@IdCode AS 'idc'
+              ,@OClickId AS 'oc'
+              ,@OLinkId AS 'ol'
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER, INCLUDE_NULL_VALUES
     );
 
