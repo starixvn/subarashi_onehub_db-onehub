@@ -23,6 +23,7 @@ ALTER PROCEDURE [dbo].[OH_LinkGenerator_Ins]
     @UserId INT,
     @IP VARCHAR(50) = '',
     @LinkId INT OUTPUT,
+    @PushTrackerId BIGINT = 0 OUTPUT,
     @ErrCode INT = 0 OUTPUT,
     @ErrMsg NVARCHAR(MAX) = '' OUTPUT
 AS
@@ -224,10 +225,29 @@ BEGIN
             RETURN;
         END
         
-    END 
-  
+    END  
+       
     -- =========================
+    -- Insert the IDCode into Import Queue
+    -- =========================
+    
+    DECLARE @PushDataType SMALLINT = 1,
+            @PushDataInfo NVARCHAR(MAX) 
 
+	SELECT  @PushDataInfo = ( SELECT @IDCode AS IDCode, 1 AS StatusId, CAST(@SiteId AS NVARCHAR(10)) AS SiteId FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+
+    EXEC [Task_API_PushDataTracker_Import]
+        @PushDataType	= @PushDataType
+        ,@PushDataInfo	= @PushDataInfo  
+        ,@ErrCode	= @ErrCode OUTPUT
+        ,@ErrMsg	= @ErrMsg OUTPUT
+        ,@PushTrackerId = @PushTrackerId OUTPUT
+
+
+    -- =========================
+    -- Insert into LinkGenerator table  
+    -- =========================
+    
     INSERT INTO dbo.LinkGenerator (
         LinkName,
         IDCode,
@@ -308,7 +328,7 @@ BEGIN
         SET @ErrMsg = @DomainUpdErrMsg;
         RETURN;
     END
-
+ 
     -- =========================
     -- Write log
     -- =========================

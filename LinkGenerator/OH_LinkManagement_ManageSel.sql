@@ -160,6 +160,9 @@ BEGIN
 			(l.ShortDomain LIKE '%' + @Search + '%') 
 		OR (l.ShortPath LIKE '%' + @Search + '%')
 		OR (l.FullLink LIKE '%' + @Search + '%')
+		OR (cp.CampaignName LIKE '%' + @Search + '%')
+		OR (c.CountryName LIKE '%' + @Search + '%')
+		OR (co.ComponentName LIKE '%' + @Search + '%')
 		OR  ISNULL(@Search, '') = ''
 	)
 	AND l.CreatedDate BETWEEN @StartDate AND DATEADD(DAY,1,@EndDate)
@@ -277,8 +280,6 @@ BEGIN
 		  ISNULL(@TotalFTDs,0) AS TotalFTDs,
 		  ISNULL(@AvgFTDs,0) AS AvgFTDs,
 		  ISNULL(@Bonus,0) AS Bonus
-
-	DROP TABLE #data;
 END
 
 

@@ -4571,4 +4571,4 @@ exec OH_Domain_Ins @ErrCode=@p1 output,@ErrMsg=@p2 output,@Data=N'[
     ]
   }
 ]',@DomainType=2,@SiteId=101
-select @p1, @p2
+select @p1, @p2 
