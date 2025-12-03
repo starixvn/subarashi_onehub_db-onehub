@@ -7,7 +7,7 @@
 */
 
 declare @p1 int
-set @p1=0
+set @p1=0 
 declare @p2 nvarchar(max)
 set @p2=N''
 exec OH_Domain_Ins @ErrCode=@p1 output,@ErrMsg=@p2 output,@Data=N'[

@@ -51,7 +51,7 @@ BEGIN
 	(
 		[UniqueClick]   [int] NULL,
 		[PageCode]		VARCHAR(100) NULL,
-		[FTD]			[MONEY] NULL,
+		[FTD]			[int] NULL,
 		[Avg_FTD]		[MONEY] NULL,
 		[Bonus]			[int] NULL,
 		[Registration]  [int] NULL
@@ -128,7 +128,7 @@ BEGIN
 	FROM #data d
 	CROSS APPLY (
 		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
-		       SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END) AS FTD,
+		       SUM(CASE WHEN m.ClickId IS NOT NULL  AND m.FTDDate IS NOT NULL THEN 1 ELSE 0 END) AS FTD,
 			   CASE WHEN  SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
 			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
 			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END AS Avg_FTD,
@@ -138,9 +138,15 @@ BEGIN
 		INNER JOIN ClickStatistics c WITH(NOLOCK) ON l.LinkId = c.LinkId
 		LEFT JOIN  MemberInfo m WITH(NOLOCK) ON c.ClickId = m.ClickId AND m.IsRemoved = 0
 		LEFT JOIN dbo.TpExchange te WITH (NOLOCK) ON m.Currency = te.TpExchangeId
-		LEFT JOIN  bodb_12B.dbo.BonusInfo b WITH(NOLOCK) ON m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		OUTER APPLY 
+		(
+			SELECT    TOP 1 b.CustID  CustID
+			FROM	bodb_12B.dbo.BonusInfo b WITH(NOLOCK) 
+			WHERE   m.CustId = b.CustId AND b.PromotionType = 1 AND b.SiteId = 101
+		) b
+		
 		OUTER APPLY dbo.OH_f_ExchangeRate_Sel(m.FTDDate,ISNULL(te.ExchangeId, m.Currency), 0) ex
-		WHERE l.PageCode = d.PageCode AND c.Date >= l.CreatedDate
+		WHERE l.PageCode = d.PageCode AND c.Date >= l.Date  AND c.ClickTypeId = 0
 	) x
 
     -- Get total row count
