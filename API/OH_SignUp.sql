@@ -22,7 +22,7 @@ CREATE PROCEDURE [dbo].[OH_SignUp]
     @UserAgent NVARCHAR(500) = '',
     @IP VARCHAR(50) = '',
     @IdCode VARCHAR(20) = '', 
-    @OClickId INT = 0, 
+    @OClickId VARCHAR(20) = '', 
     @OLinkId INT = 0,
     @ErrCode INT = 0 OUTPUT,
     @ErrMsg NVARCHAR(MAX) = '' OUTPUT

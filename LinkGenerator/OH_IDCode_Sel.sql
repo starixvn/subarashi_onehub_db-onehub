@@ -107,7 +107,7 @@ BEGIN
 			,i.StatusId
 			,i.CreatedDate
 			,i.SiteId
-			,ROW_NUMBER() OVER(ORDER BY i.Id DESC) AS RowIdx
+			,ROW_NUMBER() OVER(ORDER BY i.Id ASC) AS RowIdx
 		FROM dbo.IDCode i WITH (NOLOCK)
 		WHERE i.CreatedDate >= @FromDate AND i.CreatedDate < @ToDate;
 	END
