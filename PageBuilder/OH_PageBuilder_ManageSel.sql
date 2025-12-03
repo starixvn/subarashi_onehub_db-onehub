@@ -52,7 +52,7 @@ BEGIN
 		[UniqueClick]   [int] NULL,
 		[PageCode]		VARCHAR(100) NULL,
 		[FTD]			[int] NULL,
-		[Avg_FTD]		[MONEY] NULL,
+		[AvgFTD]		[MONEY] NULL,
 		[Bonus]			[int] NULL,
 		[Registration]  [int] NULL
 	)
@@ -123,15 +123,15 @@ BEGIN
 		AND b.CreatedDate BETWEEN @FromDate AND DATEADD(DAY,1, @ToDate);
 
 
-	INSERT INTO #data_Statistics (PageCode, UniqueClick, FTD, Avg_FTD, Bonus, Registration)
-	SELECT d.PageCode, x.UniqueClick, x.FTD, x.Avg_FTD, x.Bonus, x.Registration
+	INSERT INTO #data_Statistics (PageCode, UniqueClick, FTD, AvgFTD, Bonus, Registration)
+	SELECT d.PageCode, x.UniqueClick, x.FTD, x.AvgFTD, x.Bonus, x.Registration
 	FROM #data d
 	CROSS APPLY (
 		SELECT COUNT(DISTINCT c.IP) AS UniqueClick,
 		       SUM(CASE WHEN m.ClickId IS NOT NULL  AND m.FTDDate IS NOT NULL THEN 1 ELSE 0 END) AS FTD,
 			   CASE WHEN  SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) = 0 THEN 0 ELSE
 			   SUM(CASE WHEN m.ClickId IS NOT NULL THEN ISNULL(FirstDepositAmount,0) * ISNULL(ex.Rate, 0) ELSE 0 END)
-			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END AS Avg_FTD,
+			   / SUM(CASE WHEN m.ClickId IS NOT NULL AND m.FTDDate IS NOT NULL  THEN 1 ELSE 0 END) END AS AvgFTD,
 			   SUM(CASE WHEN b.CustID IS NOT NULL THEN 1 ELSE 0 END) Bonus,
 			  SUM(CASE WHEN m.ClickId IS NOT NULL THEN 1 ELSE 0 END) Registration
 		FROM LinkGenerator l WITH(NOLOCK)
@@ -188,7 +188,7 @@ BEGIN
 		ISNULL(df.UniqueClick,0) AS Click,
 		ISNULL(df.Registration,0) AS Registration,
 		ISNULL(df.FTD,0) AS FTD,
-		ISNULL(df.Avg_FTD,0) AS Avg_FTD,
+		ISNULL(df.AvgFTD,0) AS AvgFTD,
 		ISNULL(df.Bonus,0) AS Bonus
 
     FROM #Data d
